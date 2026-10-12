@@ -228,6 +228,7 @@ class UpgradeTests(unittest.TestCase):
     def test_http_routes_json_validation_and_origin(self):
         service = h.ThreadingHTTPServer(('127.0.0.1', 0), h.Handler)
         old_port, h.PORT = h.PORT, service.server_port
+        old_bind, h.BIND = h.BIND, '127.0.0.1'
         worker = threading.Thread(target=service.serve_forever, daemon=True)
         worker.start()
         base = 'http://127.0.0.1:' + str(service.server_port)
@@ -248,11 +249,22 @@ class UpgradeTests(unittest.TestCase):
             with self.assertRaises(HTTPError) as rebinding:
                 urlopen(Request(base + '/', headers={'Host': 'untrusted.test'}))
             self.assertEqual(rebinding.exception.code, 409)
+            # LAN mode must accept the colleague's address while rejecting foreign origins.
+            h.BIND = '0.0.0.0'
+            lan_host = '192.168.1.20:' + str(service.server_port)
+            with urlopen(Request(base + '/', headers={'Host': lan_host})) as response:
+                self.assertEqual(response.status, 200)
+            with urlopen(Request(base + '/api/intelligence', data=b'{}', headers={**headers, 'Host': lan_host, 'Origin': 'http://' + lan_host})) as response:
+                self.assertEqual(len(json.loads(response.read())['skill']['stages']), 6)
+            with self.assertRaises(HTTPError) as lan_cross:
+                urlopen(Request(base + '/api/memory', data=b'{}', headers={**headers, 'Host': lan_host, 'Origin': 'https://untrusted.test'}))
+            self.assertEqual(lan_cross.exception.code, 403)
         finally:
             service.shutdown()
             service.server_close()
             worker.join(timeout=2)
             h.PORT = old_port
+            h.BIND = old_bind
 
     def test_actual_model_request_contains_shared_skill_and_memory(self):
         class Response:
