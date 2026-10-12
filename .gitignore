@@ -1,0 +1,42 @@
+# Credentials and machine-specific settings
+config.json
+secrets.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# User projects, uploads, generated media, caches and logs
+cache/
+projects/
+library/
+output/
+outputs/
+source-videos/
+session.json
+preferences.json
+*.bak
+*.log
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.wav
+*.mp3
+*.zip
+*.xlsx
+*.xls
+*.csv
+*.tsv
+
+# Python and local editor/runtime state
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.DS_Store
+Thumbs.db
+.vscode/

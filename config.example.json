@@ -1,0 +1,11 @@
+{
+  "base_url": "https://ai.junflow.cn/v1",
+  "model": "gpt-6.1-sol",
+  "api_key": "",
+  "comfy_url": "http://127.0.0.1:8189",
+  "reasoning_effort": "xhigh",
+  "bind": "0.0.0.0",
+  "port": 8765,
+  "cache_root": "",
+  "comfy_output_dir": "D:/ComfyUI/output"
+}

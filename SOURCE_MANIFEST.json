@@ -1,0 +1,261 @@
+{
+  "source": "Installed desktop prompt-desk; independent repository preparation",
+  "prepared_date": "2026-10-12",
+  "runtime_deployment_changed": false,
+  "github_repository_created": true,
+  "checks": {
+    "javascript_scripts": 4,
+    "javascript_syntax": "passed",
+    "json_examples": "passed",
+    "private_files": "excluded",
+    "credential_pattern_scan": "no_hits",
+    "python_tests": "not_run_shell_environment_restriction"
+  },
+  "files": [
+    {
+      "path": ".cursor/rules/collaboration.mdc",
+      "bytes": 906,
+      "sha256": "77cc5d7cc6dfe60d645ed6d912cb1de74ed36b3f6afb2103ef72fdb303dac57e"
+    },
+    {
+      "path": ".cursor/rules/workflow.mdc",
+      "bytes": 841,
+      "sha256": "cb4fde557ea07c0209596aff815b393995d68c6fb528d822c3a6edecac57f8b5"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 129,
+      "sha256": "f5d9b03aa6d02c9d1601c14daffaa3bf9ebf56137164b567d321662a39560769"
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "bytes": 341,
+      "sha256": "1949fa9b800decbd9d2c296453a076c76ef10b35aa65f60c9173b687c55f88fb"
+    },
+    {
+      "path": ".github/workflows/checks.yml",
+      "bytes": 1354,
+      "sha256": "230ef8940655dcb02b62b073792ec9a001ff6a1d12a96e21cbb48ed11c4d25b2"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 466,
+      "sha256": "6b2f7448e25bccab0630f49f8fee6334156519d5e72f60b1e8b5b82ddf811d9b"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 2352,
+      "sha256": "30dbce6617f3f20ae23818fe8ddebc4c87ddd28085e55ed80eb57a25415d7407"
+    },
+    {
+      "path": "api_keys.py",
+      "bytes": 865,
+      "sha256": "2d8ea5a7c6e8097824d24b5d0cb37c9c42342ff2277f6efa79977d21cea3edc5"
+    },
+    {
+      "path": "banana_client.py",
+      "bytes": 20005,
+      "sha256": "aef1fdc218c3c0362363ad3e7a4f4eda15e079a2c7279ca881de6ca40804b829"
+    },
+    {
+      "path": "bootstrap.py",
+      "bytes": 794,
+      "sha256": "36d04fdeaf33f021e6bb55c5ef989a023f5769932763e992ca9ecfe89fec305e"
+    },
+    {
+      "path": "config.example.json",
+      "bytes": 259,
+      "sha256": "50078457fb49e67085e88da4841de97529c3cc2778e56597dd0bde454c43413b"
+    },
+    {
+      "path": "docs/COLLABORATION.md",
+      "bytes": 2407,
+      "sha256": "c96eeeadbb9137cfe1a4da202b5166a276d355c9445528bf4d9c4bf6c47cdb17"
+    },
+    {
+      "path": "docs/DEPLOYMENT.md",
+      "bytes": 3640,
+      "sha256": "7d74106d28a4896a3137a5618ce634d72dbe88cf299f6042108127b4a2fe2308"
+    },
+    {
+      "path": "docs/GITHUB.md",
+      "bytes": 2745,
+      "sha256": "28aeaee2b5c822019757900e48954a0241aee077383d217320a2803d1f667600"
+    },
+    {
+      "path": "docs/VALIDATION.md",
+      "bytes": 2873,
+      "sha256": "d4b4ebfc8fbaf1811141f589cdb5c86bdd8c1596b7dfe9a6dc69149eb11ba144"
+    },
+    {
+      "path": "docs/WORKFLOW.md",
+      "bytes": 3689,
+      "sha256": "a0a97504101bd5e756d8fddc0a37d0f7220c0eb4ab4fe7f85c9820c5629cdae8"
+    },
+    {
+      "path": "jiji.ico",
+      "bytes": 92282,
+      "sha256": "7dbc62f5530edbac305c7fff2f71981a6824b1bb595339d6669060fda0ce8fa0"
+    },
+    {
+      "path": "jiji_core.py",
+      "bytes": 11462,
+      "sha256": "33e46b668593362c76248945dca67f3d33d479311a5e3867d7852ef1e8161c16"
+    },
+    {
+      "path": "jiji_creation.py",
+      "bytes": 6838,
+      "sha256": "f276403af4368f068a5429f58b032c0b18e250bf0306cb7cb1232511158f5c9d"
+    },
+    {
+      "path": "jiji_images.py",
+      "bytes": 2458,
+      "sha256": "5ba0b4fabbca7b5f6c749a9b4d950427e000f9123234a846ffbc334c67af6aa5"
+    },
+    {
+      "path": "jiji_intelligence.py",
+      "bytes": 29572,
+      "sha256": "0aad892f156957349438570ac2010e0b4aec594640677558d05c09ce9d8f64bb"
+    },
+    {
+      "path": "jiji_media.py",
+      "bytes": 2884,
+      "sha256": "114200d42807acea20b147e00f95e35ea1b481f102233164cf2dfa8b91147854"
+    },
+    {
+      "path": "jiji_tables.py",
+      "bytes": 8334,
+      "sha256": "2caa1512083cb461716fd0208a409d789b35779c13b71cb67ffe4525b702ee8c"
+    },
+    {
+      "path": "jiji_workflow.py",
+      "bytes": 23542,
+      "sha256": "0fef764c68ac9fa76a3569283fda11c563a700e445ebb3332bed5c87af59bd1d"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3489,
+      "sha256": "016c9c3e2f0424093fcb783efb96bef9c36ada9d6ed0304516d309ca8d5b90f2"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 17,
+      "sha256": "1c803ca04270f3acd340ace239b1e86931871344e0070b4f6db9a59ae56336cb"
+    },
+    {
+      "path": "secrets.example.json",
+      "bytes": 98,
+      "sha256": "dddabd11617f9123a8ec25327f5d1de666bac86ded085b5161fbfff3985d82f8"
+    },
+    {
+      "path": "server.py",
+      "bytes": 183108,
+      "sha256": "6a25286ffcef8e9a2a67ae65b5b77ee69fd7665e9af9987c7f129720989a8f8c"
+    },
+    {
+      "path": "setup.bat",
+      "bytes": 501,
+      "sha256": "c9ad05a2d6b52219a49dcb443cad0e6a1101ff24555d1aa3c09ab6126a7f4aed"
+    },
+    {
+      "path": "skills/H3.md",
+      "bytes": 2359,
+      "sha256": "c879c654a7d3d654a0a679d4e1870b7848ae463c45a7b6bfa2d6a9dd8aafdf02"
+    },
+    {
+      "path": "skills/Seedance2.5.md",
+      "bytes": 2028,
+      "sha256": "a480a8e0ee523755caf63531950ff496a78e87987c806997c2af422ff579d8d5"
+    },
+    {
+      "path": "skills/广告.md",
+      "bytes": 4061,
+      "sha256": "f643d2979fd4896c09399bcbd49d4b04cbbf35e6096655271d9a5bfa46f59ed8"
+    },
+    {
+      "path": "skills/汽车.md",
+      "bytes": 3813,
+      "sha256": "11a60c43008f26140099dfc23f936dcda09928ad4eff795e6f4cc2d33ab3705f"
+    },
+    {
+      "path": "skills/电商.md",
+      "bytes": 3795,
+      "sha256": "7844ae3d9bad2701dda8afd3f0ec71e06cc6a6216a4131ce7035898d7ebcf8ad"
+    },
+    {
+      "path": "skills/短剧.md",
+      "bytes": 4207,
+      "sha256": "6707d6e93992746c2d66fad0069b8b9f083b854b2eaa4a2f925c4a001ee97f80"
+    },
+    {
+      "path": "tests/test_creation.py",
+      "bytes": 8327,
+      "sha256": "cbcbc3e0d138cdd69ef2ed370e7593746a9a94c66b6f0335616ecf94ff8550c5"
+    },
+    {
+      "path": "tests/test_multiplayer.py",
+      "bytes": 1812,
+      "sha256": "48bfe9370c91a7311b8a5f7086b0d98a963a4e9c3999a74cfa8cfaab8917d425"
+    },
+    {
+      "path": "tests/test_portability.py",
+      "bytes": 3260,
+      "sha256": "6e4e64074dce27ed18cb454d8710a2ace740083fd37c74379458d23e3e592f39"
+    },
+    {
+      "path": "tests/test_tables.py",
+      "bytes": 4322,
+      "sha256": "233cb03ff39c52a27c5cfb5c23db5477104876ec391d5004925682e82c24f887"
+    },
+    {
+      "path": "tests/test_upgrade.py",
+      "bytes": 17408,
+      "sha256": "332375b05d8ffbfb66ffa40de8795877b36dd317464973213bd7f3758a5225f6"
+    },
+    {
+      "path": "tests/test_workflow.py",
+      "bytes": 13094,
+      "sha256": "5eaae5a7d542b23f2ca817ddc8f2aa763bce82b0a7385126a61d31fb232aa332"
+    },
+    {
+      "path": "tools/check_web.mjs",
+      "bytes": 890,
+      "sha256": "e43fb51060bded5136df349bd4233f78115b6f44df493d444d7135c4b9bf4752"
+    },
+    {
+      "path": "tools/run_checks.py",
+      "bytes": 1512,
+      "sha256": "65955876c185e68c878849bf97e70f4f98a16e6841472ccea93f7dfe1126ad99"
+    },
+    {
+      "path": "web/index.html",
+      "bytes": 98674,
+      "sha256": "e36a098c17828c319a08a7104167343cae29026dc394ead8693c4da5ee547e99"
+    },
+    {
+      "path": "web/intelligence.js",
+      "bytes": 50148,
+      "sha256": "95f84b54d148754c724feb5b2d16d08275fff53a7bbd7271a993041c18950031"
+    },
+    {
+      "path": "web/journey.css",
+      "bytes": 16942,
+      "sha256": "dba48d0d0943deb16ce98c5f2b7fda657f5bf3591b839d2a056556ecc5218026"
+    },
+    {
+      "path": "web/journey.js",
+      "bytes": 23567,
+      "sha256": "537bb2c3c8cfa12e78393e90df6e79fbc1a5afed9c6fcfeb4e59d5c6da6309e9"
+    },
+    {
+      "path": "启动急急.bat",
+      "bytes": 374,
+      "sha256": "a2133e9829f5063fea9cbb86ca0d4d8d9677d684192381ec93338a3ee7c07f62"
+    }
+  ],
+  "intended_github_visibility": "public",
+  "github_repository_url": "https://github.com/wangxin19951104-droid/-",
+  "github_remote_url": "https://github.com/wangxin19951104-droid/-.git",
+  "github_visibility_verified": "public",
+  "repository_status_source": "GitHub main branch commit history and Actions"
+}
