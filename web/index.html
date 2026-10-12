@@ -1,0 +1,2714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>急急</title>
+<style>
+  :root {
+    --bg: #060607;
+    --ink: #f4f1ea;
+    --muted: #8d9088;
+    --line: rgba(244, 241, 234, 0.14);
+    --accent: #d6ff4a;
+    --accent-ink: #101406;
+    --warn: #f0c36a;
+    --warn-bg: rgba(240, 195, 106, 0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    background: var(--bg);
+    font: 16px/1.55 "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+    z-index: 5;
+  }
+  button, textarea { font: inherit; color: inherit; }
+  button, .home { cursor: pointer; }
+  button:disabled { opacity: 0.38; cursor: default; }
+
+  .shell {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+  .mast, .steps { grid-column: 1 / -1; }
+  .readout { grid-column: 2; grid-row: 3 / 5; }
+  #thread { grid-column: 1; grid-row: 3; }
+  .composer { grid-column: 1; grid-row: 4; }
+
+  .mast {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+    padding: 22px 48px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .mast-left { display: flex; align-items: flex-start; gap: 16px; }
+  .home {
+    height: 32px;
+    margin: 0;
+    padding: 0 14px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    letter-spacing: 0.14em;
+  }
+  .home:hover { border-color: var(--accent); }
+  .brand {
+    margin: 0;
+    font-size: 15pt;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+  }
+  .brand-en {
+    margin: 2px 0 0;
+    color: var(--accent);
+    font: 600 11px/1 Bahnschrift, "Segoe UI", sans-serif;
+    letter-spacing: 0.32em;
+  }
+  .cards.folders {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    padding-top: 8px;
+  }
+  .cards.pockets { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .cards.pockets .card { min-height: 150px; }
+  .cards.pockets .card .name { font-size: 28px; }
+  .cards.folders .card {
+    overflow: visible;
+    min-height: 240px;
+    margin-top: 16px;
+    padding: 28px 22px 22px;
+    cursor: pointer;
+    justify-content: flex-end;
+  }
+  .cards.folders .card.has-cover {
+    background-image:
+      linear-gradient(180deg, rgba(6, 6, 7, 0.08) 0%, rgba(6, 6, 7, 0.28) 46%, rgba(6, 6, 7, 0.92) 100%),
+      var(--cover);
+    background-size: cover;
+    background-position: center;
+  }
+  .cards.folders .card.has-cover:hover {
+    color: var(--ink);
+    border-color: var(--accent);
+    background-image:
+      linear-gradient(180deg, rgba(6, 6, 7, 0.16) 0%, rgba(6, 6, 7, 0.4) 42%, rgba(6, 6, 7, 0.94) 100%),
+      var(--cover);
+  }
+  .cards.folders .card.has-cover:hover::before {
+    background: #0c0c0e;
+    border-color: var(--accent);
+  }
+  .cards.folders .card.has-cover:hover .line { color: rgba(244, 241, 234, 0.78); }
+  .cards.folders .card::before {
+    content: "";
+    position: absolute;
+    top: -15px;
+    left: -1px;
+    width: 84px;
+    height: 16px;
+    background: #0c0c0e;
+    border: 1px solid var(--line);
+    border-bottom: 0;
+  }
+  .cards.folders .card::after { content: none; }
+  .cards.folders .card .idx { display: none; }
+  .cards.folders .card .name {
+    margin-top: 8px;
+    font-size: clamp(28px, 2.4vw, 40px);
+  }
+  .cards.folders.pockets .card { min-height: 150px; }
+  .cards.folders.pockets .card .name { font-size: 28px; }
+  .cards.folders.pockets .sheet {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .cards.folders.pockets .add-asset {
+    position: relative;
+    z-index: 2;
+    width: fit-content;
+    min-height: 36px;
+    margin-top: 12px;
+    padding: 0 14px;
+  }
+  .cards.folders.pockets .sheet img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    cursor: zoom-in;
+    background: #111;
+  }
+  .style-still {
+    display: block;
+    width: min(100%, 920px);
+    aspect-ratio: 21 / 9;
+    object-fit: cover;
+    cursor: zoom-in;
+    background: #111;
+  }
+  .style-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    width: min(100%, 920px);
+  }
+  .style-grid .pick {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border: 2px solid transparent;
+    background: #111;
+    cursor: pointer;
+  }
+  .style-grid .pick.on { border-color: var(--accent); }
+  .style-grid .pick img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+  .asset-ui { margin-top: 18px; }
+  .asset-ui .back {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    margin: 0 0 14px;
+    padding: 0 16px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    letter-spacing: 0.12em;
+  }
+  .asset-ui audio { display: block; width: min(480px, 100%); margin-top: 12px; }
+  .asset-ui .filebtn { margin-top: 16px; }
+  .asset-ui .miss { margin: 12px 0 0; color: var(--muted); }
+  .cards.folders .card .line {
+    position: static;
+    margin-top: 8px;
+    color: rgba(244, 241, 234, 0.72);
+  }
+  .cards.folders .fold-tools {
+    position: absolute;
+    z-index: 2;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    gap: 8px;
+  }
+  .cards.folders .fold-tools button {
+    height: 32px;
+    padding: 0 12px;
+    color: var(--ink);
+    background: rgba(6, 6, 7, 0.72);
+    border: 1px solid var(--line);
+    letter-spacing: 0.08em;
+  }
+  .cards.folders .card:hover .fold-tools button {
+    color: var(--ink);
+    background: #060607;
+  }
+  .cards.folders .fold-del:hover {
+    color: #ffd2d2;
+    border-color: #e07a7a;
+  }
+  .cards.folders .fold-cover:hover { border-color: var(--accent); }
+  .cards.folders .card.current::before { border-color: var(--accent); }
+  .cards.folders .card:hover::before {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .shell.at-folders .composer { display: none; }
+  .shell.at-folders #thread { grid-row: 3 / 5; }
+  .mast-meta {
+    margin: 0;
+    text-align: right;
+    font: 600 13px/1.7 Bahnschrift, "Segoe UI", sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .mast-meta b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .steps li {
+    margin: 0;
+    padding: 18px 22px 16px;
+    border-right: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 20px;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+  }
+  .steps li:last-child { border-right: 0; }
+  .steps .num {
+    display: block;
+    margin-bottom: 4px;
+    font: 600 11px/1 Bahnschrift, "Segoe UI", sans-serif;
+    letter-spacing: 0.18em;
+  }
+  .steps li.on {
+    color: var(--bg);
+    background: var(--accent);
+  }
+  .steps li.on .num { color: var(--accent-ink); }
+  .steps li.back { cursor: pointer; }
+  .steps li.back:hover { color: var(--ink); }
+
+  .stage-head {
+    padding: 22px 0 0;
+  }
+  #thread {
+    overflow: auto;
+    padding: 8px 48px 24px;
+  }
+  #thread.poster {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #thread.poster .cards {
+    flex: 1;
+    min-height: 0;
+    margin-top: 18px;
+  }
+  #thread.poster .card { height: 100%; }
+  .stage-head .back {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    margin: 0 0 16px;
+    padding: 0 16px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    letter-spacing: 0.12em;
+  }
+  .stage-head .back:hover { border-color: var(--accent); color: var(--accent); }
+  .stage-head .back[hidden],
+  .shell.at-folders .stage-head .back { display: none; }
+    margin: 0;
+    font-size: clamp(32px, 3vw, 48px);
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+  .stage-head p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  .bubble {
+    max-width: 68ch;
+    margin: 22px 0 0;
+    padding: 0 0 0 16px;
+    border-left: 2px solid var(--accent);
+    white-space: pre-wrap;
+    font-size: 17px;
+    line-height: 1.65;
+  }
+  .bubble.user {
+    margin-left: auto;
+    padding: 0 16px 0 0;
+    border-left: 0;
+    border-right: 2px solid rgba(244, 241, 234, 0.35);
+    color: #d9d6ce;
+    text-align: right;
+  }
+  .bubble.thinking {
+    color: var(--muted);
+    border-left-color: rgba(214, 255, 74, 0.45);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .card {
+    position: relative;
+    overflow: hidden;
+    min-height: 188px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 22px 22px 28px;
+    text-align: left;
+    color: var(--ink);
+    background: #0c0c0e;
+    border: 1px solid var(--line);
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  }
+  .card::after {
+    content: attr(data-mark);
+    position: absolute;
+    right: -4px;
+    bottom: -42px;
+    font: 800 108px/0.8 Bahnschrift, "Segoe UI", sans-serif;
+    letter-spacing: -0.07em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(214, 255, 74, 0.55);
+    pointer-events: none;
+  }
+  .card.current { border-color: var(--accent); }
+  .card:hover:not(:disabled) {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+  .card:hover:not(:disabled)::after {
+    color: rgba(16, 20, 6, 0.16);
+    -webkit-text-stroke: 0;
+  }
+  .card .idx {
+    position: relative;
+    z-index: 1;
+    font: 600 13px/1 Bahnschrift, "Segoe UI", sans-serif;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+  }
+  .card:hover:not(:disabled) .idx { color: var(--accent-ink); }
+  .card .name {
+    position: relative;
+    z-index: 1;
+    margin-top: 22%;
+    font-size: clamp(40px, 3.2vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .card .line {
+    position: absolute;
+    z-index: 1;
+    left: 22px;
+    right: 22px;
+    bottom: 86px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .card:hover:not(:disabled) .line { color: #2a3810; }
+  .cards.again { margin-top: 18px; }
+  .cards.again .card {
+    min-height: 0;
+    height: auto;
+    padding: 18px;
+  }
+  .cards.again .card::after { display: none; }
+  .cards.again .card .name {
+    margin-top: 18px;
+    font-size: 32px;
+  }
+  .cards.again .card .line {
+    position: static;
+    margin-top: 12px;
+  }
+
+  .actions,
+  .dock {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .composer .dock {
+    margin: 0 0 8px;
+  }
+  .taskline {
+    margin: 0 0 8px;
+    min-height: 1.2em;
+    letter-spacing: 0.04em;
+  }
+  .actions button,
+  .dock button {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 0;
+    padding: 14px 18px;
+    letter-spacing: 0.06em;
+  }
+  .dock button { padding: 8px 12px; }
+  .actions button:hover:not(:disabled),
+  .dock button:hover:not(:disabled) { border-color: var(--accent); }
+  .prompt-sheet { margin-top: 18px; display: grid; gap: 16px; }
+  .prompt-body {
+    margin: 0;
+    white-space: pre-wrap;
+    font: inherit;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .film-stage { margin: 18px 0; display: grid; gap: 12px; }
+  .film-stage video { width: 100%; max-height: 70vh; background: #000; }
+  .save-film {
+    display: inline-block;
+    width: fit-content;
+    background: var(--accent);
+    color: var(--accent-ink);
+    padding: 14px 18px;
+    text-decoration: none;
+    letter-spacing: 0.06em;
+  }
+  .actions button.primary,
+  .actions button.on,
+  .dock button.primary,
+  .dock button.on {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+  .pick {
+    position: relative;
+  }
+  .pick-current::after {
+    content: " ▴";
+    color: var(--accent);
+  }
+  .pick-menu {
+    display: none;
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 6;
+    min-width: 100%;
+    max-height: 280px;
+    overflow: auto;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .pick.open { z-index: 7; }
+  .pick.open .pick-menu {
+    display: flex;
+    animation: pick-rise 0.16s ease;
+  }
+  .pick-menu button {
+    background: #12141a;
+    white-space: nowrap;
+    text-align: left;
+  }
+  @keyframes pick-rise {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .figures figure {
+    margin: 0;
+    border: 1px solid var(--line);
+    background: #101114;
+  }
+  .figures img {
+    display: block;
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    background: #f4f1ea;
+    cursor: zoom-in;
+  }
+  .figures figure { position: relative; cursor: zoom-in; }
+  #viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    background: rgba(6, 6, 7, 0.9);
+  }
+  #viewer img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    background: #f4f1ea;
+    transform-origin: center center;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  #viewer.dragging,
+  #viewer.dragging img {
+    cursor: grabbing;
+  }
+  .figures figcaption {
+    margin: 0;
+    padding: 8px 10px 0;
+    color: rgba(244, 241, 234, 0.72);
+    font-size: 13px;
+  }
+  .drop {
+    height: 28px;
+    margin: 8px 10px 10px;
+    padding: 0 10px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    letter-spacing: 0.08em;
+  }
+  .drop:hover {
+    color: #ffd2d2;
+    border-color: #e07a7a;
+  }
+  .sheet .thumb { position: relative; width: 72px; height: 72px; }
+  .sheet .drop {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 22px;
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+    background: rgba(6, 6, 7, 0.78);
+  }
+  .audio-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .audio-row .drop { margin: 0; }
+
+  .readout {
+    border-left: 1px solid var(--line);
+    padding: 28px 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    background: #09090b;
+  }
+  .readout .k {
+    margin: 0 0 4px;
+    color: var(--muted);
+    font: 600 11px/1 Bahnschrift, "Segoe UI", sans-serif;
+    letter-spacing: 0.22em;
+  }
+  .readout .v {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .change {
+    margin: 8px 0 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--accent);
+    font: 600 12px/1 Bahnschrift, "Segoe UI", sans-serif;
+    letter-spacing: 0.16em;
+  }
+  .change:hover { color: var(--ink); }
+  .readout .v.num {
+    color: var(--accent);
+    font-size: 76px;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.05em;
+  }
+  .rail-name {
+    margin: auto 0 0;
+    writing-mode: vertical-rl;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: rgba(244, 241, 234, 0.28);
+  }
+
+  .banner {
+    display: none;
+    margin: 0 0 10px;
+    padding: 8px 0;
+    color: var(--warn);
+  }
+  .composer {
+    position: relative;
+    z-index: 4;
+    border-top: 1px solid var(--line);
+    padding: 16px 48px 22px;
+    background: #08080a;
+  }
+  .composer-resize { position: absolute; left: 0; right: 0; top: -4px; height: 8px; cursor: ns-resize; }
+  .row { display: flex; gap: 16px; align-items: flex-end; }
+  .filebtn {
+    position: relative;
+    overflow: hidden;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .filebtn:hover { border-color: var(--accent); }
+  .filebtn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  textarea {
+    flex: 1;
+    height: 56px;
+    min-height: 48px;
+    max-height: 40vh;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    resize: vertical;
+    outline: none;
+    padding: 12px 0;
+    font-size: 16px;
+  }
+  textarea::placeholder { color: #6f726c; }
+  #send {
+    min-height: 48px;
+    padding: 0 22px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: 0;
+    border-radius: 0;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+  }
+
+  @media (max-width: 1100px) {
+    .shell { grid-template-columns: 1fr; grid-template-rows: auto auto auto minmax(0, 1fr) auto; }
+    .mast, .steps, #thread, .composer, .readout { grid-column: 1; }
+    .readout { grid-row: auto; flex-direction: row; flex-wrap: wrap; border-left: 0; border-bottom: 1px solid var(--line); }
+    #thread { grid-row: auto; }
+    .cards { grid-template-columns: 1fr 1fr; }
+    .rail-name { display: none; }
+    #thread.poster { overflow: auto; }
+    #thread.poster .card { height: auto; min-height: 220px; }
+    .mast, #thread, .composer { padding-left: 20px; padding-right: 20px; }
+    .brand { font-size: 15pt; }
+  }
+
+#smartDialog { width:min(940px,94vw); max-height:88vh; padding:24px; border:1px solid var(--line); background:var(--paper,#fff); color:var(--ink,#222); overflow:auto; }
+#smartDialog::backdrop { background:rgba(0,0,0,.35); }
+#smartDialog article { border-top:1px solid var(--line); padding:16px 0; }
+#smartDialog .smart-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px; }
+#smartDialog .smart-field { display:flex; flex-direction:column; gap:6px; margin:12px 0; }
+#smartDialog input:not([type=checkbox]), #smartDialog textarea, #smartDialog select { width:100%; padding:8px; box-sizing:border-box; font:inherit; }
+#smartDialog button { margin:6px 8px 6px 0; padding:8px 12px; cursor:pointer; }
+#smartDialog pre { white-space:pre-wrap; overflow-wrap:anywhere; font:inherit; }
+#smartDialog img { max-width:220px; max-height:160px; object-fit:contain; margin:8px; }
+#intelligenceNotice { margin:4px 16px; font-size:12px; }
+
+/* Creation results occupy the center; director conversation stays on the right. */
+:root { --surface:#111314; --muted:#a4aaa1; }
+button, input, textarea, select { font:inherit; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible, summary:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+[hidden] { display:none !important; }
+#workspace, #workNav, .chat-label { display:none; }
+.shell.project-open { grid-template-columns:180px minmax(360px,1fr) 370px; grid-template-rows:80px minmax(0,1fr) auto; }
+.project-open .mast { grid-column:1 / -1; grid-row:1; padding:20px 24px; align-items:center; gap:16px; }
+.project-open .mast-left { align-items:center; gap:16px; }
+.project-open .mast-left > button:last-child { display:none; }
+.project-open .mast-meta { font-size:10px; letter-spacing:.05em; }
+.project-open .mast-meta b { display:inline; margin-left:12px; }
+.project-open #steps { display:none; }
+.project-open .readout { grid-column:1; grid-row:2 / 4; padding:24px 16px; overflow:auto; border-left:0; border-right:1px solid var(--line); background:#0b0d0e; }
+.project-open .readout > div { margin-bottom:14px; }
+.project-open .readout .num { font-size:24px; }
+.project-open .readout .v { font-size:16px; margin:4px 0; }
+.project-open .readout .k { font-size:11px; letter-spacing:.06em; }
+.project-open .readout .change { width:100%; padding:8px; font-size:12px; letter-spacing:0; margin:4px 0; }
+.project-open #workNav { display:grid; gap:6px; margin-bottom:24px; }
+#workNav button { display:flex; justify-content:space-between; align-items:center; text-align:left; padding:11px 12px; background:none; border:1px solid transparent; color:#a4aaa1; font-size:14px; border-radius:6px; }
+#workNav button:hover { color:var(--ink); background:#191c1d; }
+#workNav button.active { background:#d6ff4a; color:#101406; font-weight:650; }
+#workNav button small { font-size:10px; opacity:.55; }
+.project-switch { margin:14px 0; font-size:11px; color:var(--muted); }
+.project-switch select { display:block; width:100%; margin-top:6px; padding:8px; background:#171a1b; color:var(--ink); border:1px solid var(--line); border-radius:4px; font-size:12px; }
+.project-open #workspace { display:flex; flex-direction:column; grid-column:2; grid-row:2 / 4; min-width:0; min-height:0; background:#0f1112; }
+.workspace-head { display:flex; align-items:center; justify-content:space-between; padding:24px 28px 16px; gap:16px; }
+.workspace-head small { color:var(--accent); font-size:10px; letter-spacing:.16em; }
+.workspace-head h1 { font-size:28px; line-height:1.2; margin:8px 0; letter-spacing:-.03em; }
+.workspace-head p { color:var(--muted); font-size:12px; margin:0; }
+.workspace-head button { font-size:12px; padding:8px 10px; background:none; color:var(--muted); border:1px solid var(--line); border-radius:5px; white-space:nowrap; }
+.next-action { margin:0 28px 14px; display:flex; align-items:center; justify-content:space-between; gap:16px; border:1px solid #d6ff4a36; background:#d6ff4a08; border-radius:8px; padding:14px 16px; }
+.next-action strong { font-size:14px; }
+.next-action p { margin:4px 0 0; color:var(--muted); font-size:12px; }
+.next-action button, .generation-dialog .primary { background:var(--accent); color:var(--accent-ink); border:0; border-radius:5px; padding:10px 14px; font-weight:650; white-space:nowrap; }
+.next-action small { color:var(--warn); font-size:12px; }
+.workspace-status { margin:0 28px; font-size:12px; }
+.workspace-status .banner { padding:10px; border-radius:4px; overflow-wrap:anywhere; white-space:pre-wrap; }
+.workspace-status .taskline { color:var(--muted); margin:0 0 8px; }
+#workspace .dock { padding:0 28px 16px; margin:0; gap:6px; border-bottom:1px solid var(--line); }
+.workspace-settings { border-bottom:1px solid var(--line); }
+.workspace-settings summary { cursor:pointer; color:var(--muted); font-size:12px; padding:8px 28px 14px; }
+.workspace-settings #dock { border-bottom:0; }
+#workspace .dock button { padding:7px 10px; font-size:12px; border-radius:4px; letter-spacing:0; }
+#workspace .dock #dockSubmit { background:transparent; color:var(--ink); border-color:var(--line); font-weight:400; }
+#workspace .pick-menu { top:calc(100% + 6px); bottom:auto; }
+#workspaceBody { padding:8px 28px 32px; overflow:auto; flex:1; min-height:0; }
+.smart-content { font-size:14px; }
+.smart-content > p { color:var(--muted); font-size:13px; }
+.smart-content article { padding:18px; background:var(--surface); border:1px solid var(--line); border-radius:8px; margin:14px 0; }
+.smart-content h3 { font-size:16px; margin:0 0 12px; }
+.smart-content h4 { margin:0 0 12px; font-size:13px; }
+.smart-content pre { white-space:pre-wrap; overflow-wrap:anywhere; font:inherit; margin:8px 0; }
+.smart-content button, .generation-dialog button { background:#1c2021; color:var(--ink); border:1px solid var(--line); border-radius:5px; padding:8px 12px; margin:6px 8px 6px 0; font-size:13px; }
+.smart-content button:hover, .generation-dialog button:hover { border-color:var(--accent); }
+.smart-field { display:flex; flex-direction:column; gap:7px; margin:12px 0; }
+.smart-field span { font-size:12px; color:var(--muted); }
+.smart-content input:not([type=checkbox]), .smart-content textarea, .smart-content select { width:100%; padding:10px; background:#090b0c; color:var(--ink); border:1px solid #ffffff24; border-radius:5px; font-size:14px; }
+.smart-content textarea { resize:vertical; min-height:92px; }
+.field-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; }
+.field-grid > label:last-child { grid-column:1 / -1; }
+.smart-content small { display:block; color:var(--muted); font-size:12px; }
+.smart-content img { max-width:100%; max-height:260px; border-radius:5px; object-fit:contain; cursor:zoom-in; }
+.asset-editor > img { width:100%; height:200px; background:#090b0c; }
+.asset-tools { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:16px 0; }
+.asset-tools .filebtn { padding:8px 12px; font-size:12px; letter-spacing:0; border-radius:5px; }
+.asset-tools input { display:none; }
+.comparison-columns { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.comparison-columns > div { padding:12px; background:#080a0b; border-radius:5px; min-width:0; }
+.comparison-columns > div:last-child { border:1px solid #d6ff4a3b; }
+.revision { margin:12px 0; border:1px solid var(--line); border-radius:6px; padding:14px; }
+.revision summary { cursor:pointer; color:var(--muted); font-size:13px; }
+.review-evidence { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.evidence-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-content:start; gap:8px; }
+.evidence-grid figure { margin:0; }
+.evidence-grid img { width:100%; height:130px; object-fit:contain; background:#080a0b; }
+.evidence-grid figcaption { font-size:11px; color:var(--muted); }
+.workspace-film { width:100%; max-height:500px; background:#000; margin:16px 0; }
+.empty-state { border:1px dashed var(--line); border-radius:8px; padding:32px; margin:24px 0; }
+.empty-state h2 { font-size:23px; font-weight:550; margin:8px 0; }
+.empty-state p { color:var(--muted); font-size:13px; }
+.project-open #thread { grid-column:3; grid-row:2; padding:0 20px 24px; border-left:1px solid var(--line); min-width:0; }
+.project-open #thread .stage-head { display:none; }
+.project-open .chat-label { display:block; position:sticky; top:0; background:var(--bg); padding:20px 0; z-index:2; border-bottom:1px solid var(--line); font-size:13px; }
+.project-open .bubble { font-size:14px; line-height:1.75; padding-left:12px; overflow-wrap:anywhere; }
+.project-open #thread > .asset-ui, .project-open #thread > .figures, .project-open #thread > .prompt-sheet, .project-open #thread > .film-stage { display:none; }
+.project-open #thread .cards { grid-template-columns:1fr 1fr; }
+.project-open #thread .card .name { font-size:20px; }
+.project-open #thread .card { padding:12px; min-height:70px; }
+.project-open .composer { grid-column:3; grid-row:3; padding:16px 20px; border-left:1px solid var(--line); }
+.project-open .composer-resize { display:none; }
+.project-open .composer .row { display:flex; flex-wrap:wrap; gap:8px; }
+.project-open .composer .row .filebtn { font-size:11px; padding:6px 8px; min-height:28px; letter-spacing:0; }
+.project-open .readout { gap:8px; }
+.project-open .rail-name { display:none; }
+.project-open #say { flex-basis:100%; width:100%; height:90px !important; min-height:70px; font-size:14px; padding:12px; }
+.project-open #send { padding:8px 18px; height:auto; min-height:36px; margin-left:auto; font-size:13px; }
+#intelligenceNotice { font-size:11px; color:var(--muted); margin:8px 0 0; }
+#intelligenceNotice button { background:none; border:0; color:var(--accent); padding:0; font-size:11px; }
+.project-open.chat-collapsed { grid-template-columns:180px minmax(0,1fr); }
+.project-open.chat-collapsed #thread, .project-open.chat-collapsed .composer { display:none; }
+.generation-dialog { width:min(680px,94vw); max-height:85vh; padding:0; color:var(--ink); background:#101314; border:1px solid #ffffff30; border-radius:12px; }
+.generation-dialog::backdrop { background:#000b; }
+.generation-dialog header, .generation-dialog section, .generation-dialog footer { padding:20px 24px; }
+.generation-dialog header { border-bottom:1px solid var(--line); }
+.generation-dialog h2 { font-size:22px; margin:0; }
+.generation-dialog section { overflow:auto; }
+.generation-dialog[open] { display:flex; flex-direction:column; }
+.generation-dialog section { min-height:0; }
+.generation-dialog pre { white-space:pre-wrap; overflow-wrap:anywhere; font:inherit; line-height:1.65; }
+.generation-dialog img { max-width:100%; cursor:zoom-in; }
+.generation-dialog audio { max-width:100%; }
+#sourceVideoOpen { background:transparent; color:var(--ink); }
+.generation-dialog footer { position:sticky; bottom:0; background:#101314; display:flex; justify-content:flex-end; border-top:1px solid var(--line); }
+.generation-dialog article { border-top:1px solid var(--line); padding:12px 0; font-size:14px; }
+.generation-dialog p, .generation-dialog small { color:var(--muted); font-size:13px; }
+.plan-stats { display:flex; flex-wrap:wrap; gap:12px; margin:20px 0; }
+.plan-stats strong { padding:12px; background:#d6ff4a0c; border:1px solid #d6ff4a33; border-radius:6px; font-size:14px; }
+.smart-error { color:var(--warn); }
+@media(max-width:1200px) {
+  .shell.project-open { grid-template-columns:146px minmax(330px,1fr) 300px; }
+  .workspace-head { padding:20px; } .next-action { margin-left:20px; margin-right:20px; }
+  #workspaceBody { padding:8px 20px 24px; } #workspace .dock { padding:0 20px 12px; }
+  .review-evidence { grid-template-columns:1fr; }
+  .project-open .mast-meta { display:none; }
+  #workNav button { font-size:13px; padding:10px 8px; white-space:nowrap; }
+  #workNav button small { display:none; }
+}
+@media(max-width:900px) {
+  .shell.project-open, .project-open.chat-collapsed { height:auto; min-height:100vh; grid-template-columns:130px minmax(0,1fr); grid-template-rows:72px auto auto auto; }
+  .project-open .readout { grid-row:2 / 5; }
+  .project-open #workspace { grid-row:2; min-height:600px; }
+  #workspaceBody { max-height:65vh; }
+  .project-open #thread { grid-column:2; grid-row:3; max-height:420px; border-top:1px solid var(--line); }
+  .project-open .composer { grid-column:2; grid-row:4; }
+  .workspace-head button { white-space:normal; } .workspace-head h1 { font-size:24px; }
+}
+@media(max-width:580px) {
+  .shell.project-open, .project-open.chat-collapsed { display:flex; flex-direction:column; }
+  .project-open .mast { order:0; }
+  .project-open .readout { order:1; }
+  .project-open #workspace { order:2; }
+  .project-open #thread { order:3; }
+  .project-open .composer { order:4; }
+  .project-open .mast { padding:16px; } .project-open .brand-en { display:none; }
+  .project-open .readout { padding:10px 16px; border:0; }
+  .project-open .readout > div { display:none; }
+  .project-open #workNav { display:flex; flex-wrap:wrap; margin:0; gap:4px; }
+  #workNav button { padding:8px; font-size:12px; } #workNav small, .project-switch { display:none; }
+  .field-grid, .comparison-columns { grid-template-columns:1fr; }
+  .next-action { align-items:flex-start; flex-direction:column; }
+  .project-open #workspace { min-height:600px; } .workspace-head { gap:8px; }
+  #workspaceBody { max-height:none; }
+}
+
+</style>
+<link rel="stylesheet" href="/journey.css">
+</head>
+<body>
+<div class="shell at-folders">
+  <header class="mast">
+    <div class="mast-left">
+      <button type="button" class="home" id="home">首页</button>
+      <div>
+        <h1 class="brand">急急如漫令</h1>
+        <p class="brand-en">PROMPT DESK</p>
+      </div>
+    </div>
+    <p class="mast-meta" id="modelLine">图 Nano Banana 2.1<br>视频 Seedance 2.5</p>
+  </header>
+  <ol class="steps" id="steps">
+    <li data-step="director"><span class="num">01</span>导演</li>
+    <li data-step="script"><span class="num">02</span>剧本</li>
+    <li data-step="assets"><span class="num">03</span>资产</li>
+    <li data-step="prompts"><span class="num">04</span>提示词</li>
+    <li data-step="submit"><span class="num">05</span>成片</li>
+  </ol>
+  <div id="thread" class="poster">
+    <div class="stage-head">
+      <button type="button" class="back" id="backProjects" hidden>返回</button>
+      <h1 id="stageTitle">选一个项目</h1>
+      <p id="stageSub">每人做自己的项目。同一个项目不能两个人一起开。项目设定与生成记录会自动保存</p>
+    </div>
+  </div>
+  <aside class="readout" id="readout">
+    <div>
+      <p class="k">DIRECTOR</p>
+      <p class="v" id="readDirector">—</p>
+      <button type="button" class="change" id="allProjects">所有项目</button>
+      <button type="button" class="change" id="changeDirector" hidden>换一位</button>
+    </div>
+    <div><p class="k">SCENES</p><p class="v num" id="readScenes">00</p></div>
+    <div><p class="k">ASSETS</p><p class="v num" id="readAssets">00</p></div>
+    <div><p class="k">FRAME</p><p class="v" id="readFrame">—</p></div>
+    <div><p class="k">OUTPUT</p><p class="v" id="readOut">—</p></div>
+    <p class="rail-name">急急如漫令</p>
+  </aside>
+  <form class="composer" id="composer">
+    <div class="composer-resize" id="composerResize"></div>
+    <p class="banner" id="banner"></p>
+    <p class="taskline" id="taskLine">当前没有任务</p>
+    <div class="dock" id="dock">
+      <div class="pick" data-pick="ratio">
+        <button type="button" class="pick-current" id="pickRatio">16:9</button>
+        <div class="pick-menu">
+          <button type="button" data-kind="ratio" data-value="9:16">9:16</button>
+          <button type="button" data-kind="ratio" data-value="16:9">16:9</button>
+          <button type="button" data-kind="ratio" data-value="21:9">21:9</button>
+          <button type="button" data-kind="ratio" data-value="1:1">1:1</button>
+        </div>
+      </div>
+      <div class="pick" data-pick="resolution">
+        <button type="button" class="pick-current" id="pickResolution">720p</button>
+        <div class="pick-menu">
+          <button type="button" data-kind="resolution" data-value="480p">480p</button>
+          <button type="button" data-kind="resolution" data-value="720p">720p</button>
+          <button type="button" data-kind="resolution" data-value="1080p">1080p</button>
+        </div>
+      </div>
+      <div class="pick" data-pick="image-model">
+        <button type="button" class="pick-current" id="pickImage">Banana</button>
+        <div class="pick-menu">
+          <button type="button" data-kind="image-model" data-value="banana">Banana</button>
+          <button type="button" data-kind="image-model" data-value="seedream">Seedream 5.0</button>
+          <button type="button" data-kind="image-model" data-value="image25">Image 2.5</button>
+        </div>
+      </div>
+      <button type="button" id="dockBanana">生图</button>
+      <div class="pick" data-pick="video-model">
+        <button type="button" class="pick-current" id="pickVideo">Seedance 2.5</button>
+        <div class="pick-menu">
+          <button type="button" data-kind="video-model" data-value="seedance">Seedance 2.5</button>
+          <button type="button" data-kind="video-model" data-value="h3" title="25步，不走加速">H3</button>
+        </div>
+      </div>
+      <div class="pick" data-pick="seconds">
+        <button type="button" class="pick-current" id="pickSeconds">跟随分场</button>
+        <div class="pick-menu" id="secondsMenu"></div>
+      </div>
+      <button type="button" id="dockSubmit" class="primary">提交视频</button>
+      <button type="button" id="dockPause" disabled>暂停</button>
+      <button type="button" id="dockResume" disabled>继续</button>
+      <button type="button" id="dockHalt" disabled>终止</button>
+    </div>
+    <div class="row">
+      <label class="filebtn">上传剧本
+         <input id="scriptFile" type="file" accept=".docx,.txt,.md,.xlsx,.csv,.tsv">
+      </label>
+      <label class="filebtn">上传参考图
+        <input id="refFile" type="file" accept=".png,.jpg,.jpeg,.webp">
+      </label>
+      <textarea id="say" placeholder="跟导演说。例如：第2场改成23秒。或：写第1集。"></textarea>
+      <button id="send" type="submit">发送</button>
+    </div>
+  </form>
+</div>
+<script>
+const state = {
+  directorId: "",
+  directorName: "",
+  directors: [],
+  messages: [],
+  scenes: [],
+  assets: [],
+  refs: [],
+  style: null,
+  projectId: "",
+  projectList: [],
+  browsing: true,
+  pocket: "",
+  ratio: "16:9",
+  resolution: "720p",
+  imageModel: "banana",
+  videoModel: "seedance",
+  seconds: "auto",
+  step: "director",
+  waiting: false
+};
+
+function deskClient() {
+  let id = sessionStorage.getItem("prompt-desk-client");
+  if (!id) {
+    id = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    sessionStorage.setItem("prompt-desk-client", id);
+  }
+  return id;
+}
+
+const deskFetch = window.fetch.bind(window);
+window.fetch = function (url, options) {
+  const opts = options ? Object.assign({}, options) : {};
+  if (typeof url === "string" && url.charAt(0) === "/") {
+    const headers = new Headers(opts.headers || {});
+    headers.set("X-Desk-Client", deskClient());
+    headers.set("X-Desk-Project", state.projectId || "");
+    opts.headers = headers;
+  }
+  return deskFetch(url, opts);
+};
+
+function mediaUrl(base, file) {
+  const name = encodeURIComponent(file);
+  const project = encodeURIComponent(state.projectId || "");
+  return base + name + "?v=" + name + "&project=" + project;
+}
+
+const STAGE = {
+  director: ["先选一位导演", "这一集只跟一位。"],
+  script: ["把剧本传上来", "我先分场，并列出要出的图。"],
+  assets: ["四个文件夹", "人物、场景、道具、音频。传上去，再按这些资产写提示词。"],
+  prompts: ["这场的提示词", "提交时按对话写好再交。"],
+  submit: ["按场提交，接成一条", "画幅、分辨率和时长定好再交。默认跟随分场时长；也可指定统一时长，并同步检查时间轴。"]
+};
+
+const PRIMARY = new Set(["出全部资产图", "再出一次", "按刚才的对话写", "提交并成片"]);
+
+function pad(n) {
+  return String(n).padStart(2, "0");
+}
+
+function savedView() {
+  try {
+    return JSON.parse(localStorage.getItem("prompt-desk-view") || "{}") || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function rememberView() {
+  localStorage.setItem("prompt-desk-view", JSON.stringify({
+    browsing: !!state.browsing,
+    projectId: state.projectId || "",
+    pocket: state.pocket || ""
+  }));
+}
+
+function paintChrome() {
+  document.querySelector(".shell").classList.toggle("at-folders", state.browsing);
+  if (state.browsing) {
+    document.getElementById("stageTitle").textContent = "选一个项目";
+    document.getElementById("stageSub").textContent = "每个项目独立保存创作设定、素材版本与生成记录。";
+    document.querySelectorAll("#steps li").forEach((li) => li.classList.remove("on"));
+    document.getElementById("changeDirector").hidden = true;
+    document.getElementById("backProjects").hidden = true;
+    document.getElementById("readDirector").textContent = "—";
+    paintChoices();
+    rememberView();
+    return;
+  }
+  document.getElementById("backProjects").hidden = false;
+  const copy = STAGE[state.step] || STAGE.director;
+  document.getElementById("stageTitle").textContent = copy[0];
+  document.getElementById("stageSub").textContent = copy[1];
+  document.querySelectorAll("#steps li").forEach((li) => {
+    li.classList.toggle("on", li.dataset.step === state.step);
+  });
+  const picking = !!document.querySelector("#thread .cards") && state.directorId && state.step !== "director";
+  if (picking) {
+    document.getElementById("stageTitle").textContent = "换一位导演";
+    document.getElementById("stageSub").textContent = "点一张就换。不换就再点一次收起。";
+  }
+    if (state.step === "submit" && !picking) {
+    const picked = [];
+    if (state.ratio) picked.push("画幅 " + state.ratio);
+    if (state.resolution) picked.push("分辨率 " + state.resolution);
+    if (picked.length) {
+      let line = "已选 " + picked.join("，") + "。点亮的按钮就是当前选择。";
+      if (state.videoModel === "h3" && state.resolution === "720p") {
+        line += " H3 的 720p 按 " + h3Canvas(state.ratio || "16:9") + " 交，28 秒按 28.5 秒交。";
+      }
+      if (state.videoModel !== "h3") {
+        line += state.seconds === "auto" ? " 按每场计划的时长提交，不会自动拉长。" : (" Seedance 2.5 按 " + state.seconds + " 秒交。");
+      }
+      document.getElementById("stageSub").textContent = line;
+    }
+  }
+  const directorStep = document.querySelector('#steps li[data-step="director"]');
+  directorStep.classList.toggle("back", !!state.directorId);
+  document.querySelector('#steps li[data-step="assets"]').classList.toggle("back", !!state.directorId && !state.browsing);
+  document.getElementById("changeDirector").hidden = !state.directorId;
+  document.getElementById("changeDirector").textContent = picking ? "收起" : "换一位";
+  document.getElementById("readDirector").textContent = state.directorName || "—";
+  document.getElementById("readScenes").textContent = pad(state.scenes.length);
+  document.getElementById("readAssets").textContent = pad(state.assets.length);
+  document.getElementById("readFrame").textContent = state.ratio || "—";
+  document.getElementById("readOut").textContent = h3OutputLabel();
+  remember();
+  rememberView();
+  paintChoices();
+}
+
+function showBanner(text) {
+  const banner = document.getElementById("banner");
+  banner.style.display = text ? "block" : "none";
+  banner.textContent = text || "";
+}
+
+function fileToBase64(file) {
+  return file.arrayBuffer().then((buffer) => {
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 0x2000) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x2000));
+    }
+    return btoa(binary);
+  });
+}
+
+function renderBubble(role, text) {
+  const node = document.createElement("div");
+  node.className = "bubble " + role;
+  node.textContent = text;
+  const thread = document.getElementById("thread");
+  thread.appendChild(node);
+  if (state.step === "assets" && !restoring) keepAssetBoard();
+  else thread.scrollTop = thread.scrollHeight;
+}
+
+function keepAssetBoard() {
+  if (state.step !== "assets" || state.browsing) return;
+  const thread = document.getElementById("thread");
+  const board = thread.querySelector(":scope > .asset-ui");
+  if (!board) {
+    showAssetBoard();
+    return;
+  }
+  thread.appendChild(board);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function addBubble(role, text, store) {
+  renderBubble(role, text);
+  if (store === false) return;
+  if (role === "user" || role === "director") {
+    state.messages.push({ role: role === "director" ? "assistant" : "user", content: text });
+  }
+  remember();
+}
+
+let restoring = false;
+let saveTimer = 0;
+
+function snapshot() {
+  return {
+    director_id: state.directorId,
+    director_name: state.directorName,
+    step: state.step,
+    ratio: state.ratio,
+    resolution: state.resolution,
+    seconds_choice: state.seconds || "auto",
+    messages: state.messages,
+    scenes: state.scenes,
+    assets: state.assets
+  };
+}
+
+function remember() {
+  if (restoring) return;
+  const data = snapshot();
+  localStorage.setItem("prompt-desk-session", JSON.stringify(data));
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    fetch("/api/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    }).catch(() => showBanner("自动保存连接中断，项目服务恢复后可刷新。"));
+  }, 200);
+}
+
+function openViewer(src) {
+  const old = document.getElementById("viewer");
+  if (old) old.remove();
+  const viewer = document.createElement("div");
+  viewer.id = "viewer";
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = "";
+  img.draggable = false;
+  let scale = 1;
+  let ox = 0;
+  let oy = 0;
+  let dragging = false;
+  let moved = false;
+  let startX = 0;
+  let startY = 0;
+  let lastX = 0;
+  let lastY = 0;
+  let baseX = 0;
+  let baseY = 0;
+  let holdTimer = 0;
+  function paint() {
+    img.style.transform = "translate(" + ox + "px," + oy + "px) scale(" + scale + ")";
+  }
+  function stopHold() {
+    clearTimeout(holdTimer);
+    holdTimer = 0;
+  }
+  viewer.addEventListener("wheel", (event) => {
+    event.preventDefault();
+    const rect = img.getBoundingClientRect();
+    const dx = event.clientX - (rect.left + rect.width / 2);
+    const dy = event.clientY - (rect.top + rect.height / 2);
+    const next = Math.min(8, Math.max(1, scale * Math.exp(-event.deltaY * 0.0015)));
+    if (next === scale) return;
+    const applied = next / scale;
+    ox = dx - (dx - ox) * applied;
+    oy = dy - (dy - oy) * applied;
+    if (next === 1) {
+      ox = 0;
+      oy = 0;
+    }
+    scale = next;
+    paint();
+  }, { passive: false });
+  viewer.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    dragging = false;
+    moved = false;
+    lastX = event.clientX;
+    lastY = event.clientY;
+    baseX = ox;
+    baseY = oy;
+    stopHold();
+    holdTimer = setTimeout(() => {
+      dragging = true;
+      startX = lastX;
+      startY = lastY;
+      baseX = ox;
+      baseY = oy;
+      viewer.classList.add("dragging");
+      try {
+        viewer.setPointerCapture(event.pointerId);
+      } catch (err) {
+        /* synthetic events have no capture */
+      }
+    }, 180);
+  });
+  viewer.addEventListener("pointermove", (event) => {
+    lastX = event.clientX;
+    lastY = event.clientY;
+    if (!dragging) return;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+    ox = baseX + dx;
+    oy = baseY + dy;
+    paint();
+  });
+  viewer.addEventListener("pointerup", () => {
+    stopHold();
+    dragging = false;
+    viewer.classList.remove("dragging");
+  });
+  viewer.addEventListener("pointercancel", () => {
+    stopHold();
+    dragging = false;
+    viewer.classList.remove("dragging");
+  });
+  viewer.addEventListener("dragstart", (event) => event.preventDefault());
+  viewer.addEventListener("click", () => {
+    if (moved) {
+      moved = false;
+      return;
+    }
+    viewer.remove();
+  });
+  viewer.append(img);
+  document.body.appendChild(viewer);
+}
+
+function showGallery(assets, prefix) {
+  const ready = (assets || []).filter((asset) => asset.file);
+  if (!ready.length) return;
+  const wrap = document.createElement("div");
+  wrap.className = "figures";
+  ready.forEach((asset) => {
+    const fig = document.createElement("figure");
+    const img = document.createElement("img");
+    const src = mediaUrl(prefix || "/library/", asset.file);
+    img.src = src;
+    img.alt = asset.name || asset.kind || "";
+    img.onclick = () => openViewer(src);
+    const cap = document.createElement("figcaption");
+    cap.textContent = (asset.kind ? asset.kind + " " : "") + (asset.name || "");
+    fig.append(img, cap);
+    wrap.appendChild(fig);
+  });
+  const thread = document.getElementById("thread");
+  thread.appendChild(wrap);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function h3Canvas(ratio) {
+  const parts = String(ratio || "").split(":");
+  const wide = Number(parts[0]);
+  const tall = Number(parts[1]);
+  if (!wide || !tall) return "736";
+  let width;
+  let height;
+  if (wide >= tall) {
+    height = 720;
+    width = Math.round(height * wide / tall);
+  } else {
+    width = 720;
+    height = Math.round(width * tall / wide);
+  }
+  const up = (value) => (value % 32 === 0 ? value : Math.ceil(value / 32) * 32);
+  return up(width) + "×" + up(height);
+}
+
+function h3OutputLabel() {
+  if (state.videoModel === "h3" && state.resolution === "720p") {
+    return "720p " + h3Canvas(state.ratio || "16:9");
+  }
+  return state.resolution || "—";
+}
+
+function choiceFace(kind) {
+  if (kind === "ratio") return state.ratio || "16:9";
+  if (kind === "image-model") {
+    if (state.imageModel === "seedream") return "Seedream 5.0";
+    if (state.imageModel === "image25") return "Image 2.5";
+    return "Banana";
+  }
+  if (kind === "video-model") return state.videoModel === "h3" ? "H3" : "Seedance 2.5";
+  if (kind === "seconds") return !state.seconds || state.seconds === "auto" ? "跟随分场" : (state.seconds + "秒");
+  if ((state.resolution || "720p") === "720p" && state.videoModel === "h3") return "720p · 736";
+  return state.resolution || "720p";
+}
+
+function paintChoices() {
+  document.querySelectorAll(".pick").forEach((pick) => {
+    const kind = pick.dataset.pick;
+    const face = pick.querySelector(".pick-current");
+    if (face) face.textContent = choiceFace(kind);
+    let current = state.resolution;
+    if (kind === "ratio") current = state.ratio;
+    else if (kind === "image-model") current = state.imageModel;
+    else if (kind === "video-model") current = state.videoModel;
+    else if (kind === "seconds") current = state.seconds || "auto";
+    pick.querySelectorAll(".pick-menu button").forEach((button) => {
+      button.classList.toggle("on", button.dataset.value === current);
+      if (button.dataset.kind === "resolution" && button.dataset.value === "720p") {
+        button.textContent = state.videoModel === "h3" ? "720p · 736" : "720p";
+      }
+    });
+  });
+  paintModelLine();
+}
+
+function paintModelLine() {
+  const line = document.getElementById("modelLine");
+  if (!line) return;
+  const writing = line.dataset.writing || "";
+  const names = { seedream: "SEEDREAM 5.0", image25: "IMAGE 2.5" };
+  const image = names[state.imageModel] || "BANANA 2.1";
+  const video = state.videoModel === "h3" ? "H3 25步" : "SEEDANCE 2.5";
+  line.innerHTML = (writing ? "写作 " + writing : "") + "<b>" + image + "</b><b>" + video + "</b>";
+}
+
+function renderSubmitChoices() {
+  const thread = document.getElementById("thread");
+  const previous = thread.querySelector(":scope > .prompt-sheet");
+  if (previous) previous.remove();
+  const ready = state.scenes.filter((scene) => scene.prompt);
+  if (ready.length) {
+    const sheet = document.createElement("div");
+    sheet.className = "prompt-sheet";
+    ready.forEach((scene, index) => {
+      const block = document.createElement("pre");
+      block.className = "prompt-body";
+      const seconds = scene.seconds ? (scene.seconds + "秒") : "秒数未定";
+      block.textContent = "场" + (index + 1) + "  " + seconds + "  " + (scene.place || "") + "\n\n" + scene.prompt;
+      sheet.appendChild(block);
+    });
+    thread.appendChild(sheet);
+  }
+  thread.querySelectorAll(":scope > .actions").forEach((node) => node.remove());
+  paintChoices();
+}
+function restoreActions() {
+  if (state.step === "assets") showAssetBoard();
+  if (state.step === "submit") renderSubmitChoices();
+  if (state.step !== "assets" && state.assets.some((asset) => asset.file && asset.kind !== "音频")) {
+    showGallery(state.assets.filter((asset) => asset.file && asset.kind !== "音频"), "/library/");
+  }
+  if (state.refs.some((asset) => asset.file)) showGallery(state.refs.map((item) => ({ ...item, kind: "参考" })), "/refs/");
+}
+
+function restore(session) {
+  restoring = true;
+  state.browsing = false;
+  state.directorId = session.director_id || "";
+  state.directorName = session.director_name || "";
+  state.step = session.step || (state.directorId ? "script" : "director");
+  state.ratio = session.ratio || "16:9";
+  state.resolution = session.resolution || "720p";
+  state.imageModel = session.image_model === "seedream" || session.image_model === "image25" ? session.image_model : "banana";
+  state.videoModel = session.video_model === "h3" ? "h3" : "seedance";
+  state.seconds = session.seconds_choice && session.seconds_choice !== "auto" ? String(session.seconds_choice) : "auto";
+  state.messages = Array.isArray(session.messages) ? session.messages : [];
+  state.scenes = Array.isArray(session.scenes) ? session.scenes : [];
+  state.assets = Array.isArray(session.assets) ? session.assets : [];
+  state.refs = Array.isArray(session.refs) ? session.refs : [];
+  state.style = session.style || null;
+  const thread = document.getElementById("thread");
+  thread.classList.remove("poster");
+  state.messages.forEach((message) => {
+    const role = message.role === "assistant" || message.role === "director" ? "director" : "user";
+    renderBubble(role, message.content || "");
+  });
+  paintChrome();
+  restoreActions();
+  restoring = false;
+  remember();
+  if (session.thinking) followThinking();
+  if (session.drawing && session.drawing.on) followDrawing();
+  if (session.job && session.job.phase === "done") showFilm(session.job);
+  if (session.job && session.job.phase === "error") {
+    showBanner(session.job.error || "成片没有接上。");
+    addBubble("director", session.job.error || "成片没有接上。", false);
+  }
+  if (session.job && session.job.phase === "running") pollEpisode();
+}
+
+function addActions(buttons) {
+  const row = document.createElement("div");
+  row.className = "actions";
+  buttons.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = item.label;
+    if (PRIMARY.has(item.label)) button.className = "primary";
+    button.onclick = () => {
+      button.disabled = true;
+      item.run();
+    };
+    row.appendChild(button);
+  });
+  const thread = document.getElementById("thread");
+  thread.appendChild(row);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function addDirectorCards(directors, again) {
+  const row = document.createElement("div");
+  row.className = "cards" + (again ? " again" : "");
+  directors.forEach((item, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "card" + (item.id === state.directorId ? " current" : "");
+    button.dataset.mark = pad(index + 1);
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = item.name;
+    button.append(name);
+    button.onclick = () => {
+      button.disabled = true;
+      chooseDirector(item);
+    };
+    row.appendChild(button);
+  });
+  const thread = document.getElementById("thread");
+  thread.appendChild(row);
+}
+
+function planText() {
+  const scenes = state.scenes.map((scene, index) =>
+    (index + 1) + "  第" + (scene.episode || 1) + "集  " + (scene.seconds || "未定") + "秒  " + (scene.place || "") + "  记住：" + (scene.remember || "")
+  ).join("\n");
+  const assets = state.assets.map((asset) => asset.kind + "  " + asset.name).join("\n");
+  return "分好了。\n\n场次\n" + scenes + "\n\n资产\n" + (assets || "没有单列资产") + "\n\n下面四个文件夹。人物和道具参考图用白底，场景保留真实空间。音频传声音。传完按这些资产写提示词。";
+}
+
+function openDirectorPick() {
+  if (!state.directorId) return;
+  const existing = document.querySelector("#thread .cards");
+  if (existing) {
+    existing.remove();
+    paintChrome();
+    return;
+  }
+  const thread = document.getElementById("thread");
+  addDirectorCards(state.directors, true);
+  const cards = thread.querySelector(".cards");
+  const head = thread.querySelector(".stage-head");
+  if (head && cards) head.after(cards);
+  thread.scrollTop = 0;
+  paintChrome();
+}
+
+async function chooseDirector(item) {
+  const first = !state.directorId;
+  const same = state.directorId === item.id;
+  state.directorId = item.id;
+  state.directorName = item.name;
+  if (first || state.step === "director") state.step = "script";
+  document.getElementById("thread").classList.remove("poster");
+  const cards = document.querySelector("#thread .cards");
+  if (cards) cards.remove();
+  paintChrome();
+  if (same) return;
+  if (first) {
+    addBubble("user", item.name);
+    addBubble("director", item.name + "。想做什么，直接说。");
+    return;
+  }
+  addBubble("user", "换成" + item.name);
+  addBubble("director", "换成" + item.name + "。后面这一集跟这一位聊。");
+}
+
+async function afterScript(name) {
+  const stop = openThinking("正在按剧本分场");
+  const res = await fetch("/api/scenes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ director_id: state.directorId })
+  });
+  const data = await res.json();
+  stop();
+  if (!res.ok) {
+    showBanner(data.error || "没有分成场。");
+    return;
+  }
+  showBanner("");
+  state.scenes = data.scenes || [];
+  state.assets = data.assets || [];
+  state.step = "assets";
+  paintChrome();
+  addBubble("director", planText(), false);
+  showAssetBoard();
+}
+
+async function followDrawing() {
+  let node = document.getElementById("drawing");
+  if (!node) {
+    node = document.createElement("div");
+    node.id = "drawing";
+    node.className = "bubble director thinking";
+    node.textContent = "正在生成资产图";
+    const thread = document.getElementById("thread");
+    thread.appendChild(node);
+    thread.scrollTop = thread.scrollHeight;
+  }
+  const started = Date.now();
+  let seen = -1;
+  while (node.isConnected) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    let session = {};
+    try {
+      session = await (await fetch("/api/session")).json();
+    } catch (error) {
+      continue;
+    }
+    if (Array.isArray(session.assets)) state.assets = session.assets;
+    const files = state.assets.filter((asset) => asset.file).length;
+    if (files !== seen && state.step === "assets") {
+      seen = files;
+      showAssetBoard();
+    }
+    const drawing = session.drawing || {};
+    if (session.task) paintTask(session.task);
+    const waited = Math.max(0, Math.round((Date.now() - started) / 1000));
+    const stamp = String(Math.floor(waited / 60)).padStart(2, "0") + ":" + String(waited % 60).padStart(2, "0");
+    if (drawing.on) {
+      const line = drawingStatus(drawing, stamp);
+      node.textContent = line;
+      showBanner(line.replace(/\n/g, " "));
+      continue;
+    }
+    node.classList.remove("thinking");
+    node.id = "";
+    node.textContent = files ? "资产图出完了。" : "资产图没有出成。";
+    if (files) showBanner("");
+    if (state.step === "assets") showAssetBoard();
+    return;
+  }
+}
+
+function drawingStatus(drawing, stamp) {
+  if (drawing && drawing.phase === "brief") return "正在按对话写这几张静帧 · 已等 " + stamp;
+  if (drawing && drawing.phase === "paused") {
+    const where = drawing.total ? ("第 " + drawing.index + " / " + drawing.total + " 张 · " + (drawing.kind || "") + " " + (drawing.name || "")) : "";
+    return "生图已暂停" + (where ? " · " + where : "");
+  }
+  if (drawing && drawing.phase === "list") return "正在按对话整理资产清单 · 已等 " + stamp;
+  if (drawing && drawing.total) {
+    return "正在生成资产图 · 已等 " + stamp + "\n第 " + drawing.index + " / " + drawing.total + " 张 · " + (drawing.kind || "") + " " + (drawing.name || "");
+  }
+  return "正在生成资产图 · 已等 " + stamp;
+}
+
+async function findStyle() {
+  const thread = document.getElementById("thread");
+  let node = document.getElementById("styleWait");
+  if (!node) {
+    node = document.createElement("div");
+    node.id = "styleWait";
+    node.className = "bubble director thinking";
+    thread.appendChild(node);
+  }
+  node.textContent = "正在按质感出风格图";
+  showBanner("正在按质感出风格图");
+  thread.scrollTop = thread.scrollHeight;
+  const clock = setInterval(async () => {
+    if (!node.isConnected) {
+      clearInterval(clock);
+      return;
+    }
+    try {
+      const style = (await (await fetch("/api/session")).json()).style || {};
+      if (style.phase === "paused") {
+        node.textContent = "风格图已暂停";
+        showBanner("风格图已暂停");
+      } else if (style.phase === "plate" && style.total) {
+        const line = "正在按质感出风格图 · 第 " + style.index + " / " + style.total + " 张";
+        node.textContent = line;
+        showBanner(line);
+      }
+    } catch (error) {
+      return;
+    }
+  }, 1000);
+  const res = await fetch("/api/style/find", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ director_id: state.directorId, image_model: state.imageModel || "banana" })
+  });
+  const data = await res.json();
+  clearInterval(clock);
+  node.remove();
+  if (!res.ok) {
+    showBanner(data.error || "风格图没有出成。");
+    if (!document.getElementById("stylePick")) addBubble("director", data.error || "风格图没有出成。");
+    return;
+  }
+  state.style = data.style || null;
+  showBanner("");
+  showStyleGate(state.style);
+}
+
+function styleCandidates(style) {
+  const rows = [];
+  const seen = {};
+  (style.uploads || []).concat(style.choices || []).forEach((item) => {
+    if (!item || !item.file || seen[item.file]) return;
+    seen[item.file] = true;
+    rows.push(item);
+  });
+  return rows;
+}
+
+function showStyleGate(style) {
+  const old = document.getElementById("stylePick");
+  if (old) old.remove();
+  const picks = {};
+  styleCandidates(style).forEach((item) => {
+    picks[item.file] = true;
+  });
+  const wrap = document.createElement("div");
+  wrap.className = "asset-ui";
+  wrap.id = "stylePick";
+  const note = document.createElement("p");
+  note.className = "miss";
+  note.textContent = "出资产图之前先确认风格。把 Midjourney 的图传上来，这些图全部作为风格参考，只取光、颜色和材质。点一下可以去掉某一张。一次最多 8 张。";
+  const grid = document.createElement("div");
+  grid.className = "style-grid";
+  function paint() {
+    grid.textContent = "";
+    styleCandidates(style).forEach((item) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "pick" + (picks[item.file] ? " on" : "");
+      const img = document.createElement("img");
+      const src = mediaUrl("/refs/", item.file);
+      img.src = src;
+      img.alt = item.title || "风格参考";
+      button.onclick = () => {
+        picks[item.file] = !picks[item.file];
+        button.classList.toggle("on", picks[item.file]);
+      };
+      button.ondblclick = (event) => {
+        event.preventDefault();
+        openViewer(src);
+      };
+      button.appendChild(img);
+      grid.appendChild(button);
+    });
+  }
+  paint();
+  const upload = document.createElement("label");
+  upload.className = "filebtn";
+  upload.textContent = "上传 Midjourney 的图";
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".png,.jpg,.jpeg,.webp";
+  input.multiple = true;
+  input.onchange = async () => {
+    const files = Array.from(input.files || []);
+    input.value = "";
+    if (!files.length) return;
+    showBanner("正在放进风格确认。");
+    for (const file of files) {
+      const res = await fetch("/api/style/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: file.name, data_base64: await fileToBase64(file) })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showBanner(data.error || "这张风格图没放进去。");
+        return;
+      }
+      style = data.style || style;
+      state.style = style;
+    }
+    showBanner("");
+    showStyleGate(style);
+  };
+  upload.appendChild(input);
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  const yes = document.createElement("button");
+  yes.type = "button";
+  yes.className = "primary";
+  yes.textContent = "确认并出图";
+  yes.onclick = () => {
+    const files = Object.keys(picks).filter((name) => picks[name]);
+    if (!files.length) {
+      showBanner("先上传 Midjourney 的图。");
+      return;
+    }
+    confirmStyle(files);
+  };
+  const again = document.createElement("button");
+  again.type = "button";
+  again.textContent = "直接出四张风格图";
+  again.onclick = () => findStyle();
+  actions.append(yes, again);
+  wrap.append(note, grid, upload, actions);
+  const thread = document.getElementById("thread");
+  thread.appendChild(wrap);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+async function confirmStyle(files) {
+  const res = await fetch("/api/style/confirm", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ files: files })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    showBanner(data.error || "还没确认。");
+    return;
+  }
+  state.style = data.style || state.style;
+  const pick = document.getElementById("stylePick");
+  if (pick) pick.remove();
+  addBubble("director", "风格定了。这几张全部作为风格参考，只取光、颜色和材质。人物、场景、道具按这个重出。", false);
+  await makeAssets();
+}
+
+async function makeAssets() {
+  if (drawingAssets) {
+    showBanner("上一轮还在出图。");
+    return;
+  }
+  drawingAssets = true;
+  const thread = document.getElementById("thread");
+  const node = document.createElement("div");
+  node.id = "drawing";
+  node.className = "bubble director thinking";
+  node.textContent = "正在按已确认提示词生成资产";
+  showBanner("正在按已确认提示词生成资产");
+  thread.appendChild(node);
+  thread.scrollTop = thread.scrollHeight;
+  const started = Date.now();
+  const clock = setInterval(async () => {
+    if (!node.isConnected) {
+      clearInterval(clock);
+      return;
+    }
+    let session = {};
+    try {
+      session = await (await fetch("/api/session")).json();
+    } catch (error) {
+      session = {};
+    }
+    const drawing = session.drawing;
+    if (session.task) paintTask(session.task);
+    const had = state.assets.filter((asset) => asset.file).length;
+    if (Array.isArray(session.assets)) state.assets = session.assets;
+    if (state.assets.filter((asset) => asset.file).length !== had && state.step === "assets") showAssetBoard();
+    const waited = Math.max(0, Math.round((Date.now() - started) / 1000));
+    const stamp = String(Math.floor(waited / 60)).padStart(2, "0") + ":" + String(waited % 60).padStart(2, "0");
+    const line = drawingStatus(drawing, stamp);
+    node.textContent = line;
+    showBanner(line.replace(/\n/g, " "));
+    thread.scrollTop = thread.scrollHeight;
+  }, 1000);
+  let res;
+  let data = {};
+  try {
+    res = await fetch("/api/assets/all", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        director_id: state.directorId,
+        ratio: state.ratio || "16:9",
+        image_model: state.imageModel || "banana",
+        plan_fingerprint: intelligentUI.imagePlanFingerprint
+      })
+    });
+    data = await res.json();
+  } catch (error) {
+    node.classList.remove("thinking");
+    node.id = "";
+    node.textContent = "出图没有连上。";
+    showBanner("出图没有连上。");
+    return;
+  } finally {
+    clearInterval(clock);
+    drawingAssets = false;
+  }
+  node.classList.remove("thinking");
+  node.id = "";
+  if (data.stopped) {
+    node.textContent = "已终止。已经画好的还在。";
+    showBanner("已终止。");
+    state.assets = data.assets || state.assets;
+    state.step = "assets";
+    paintChrome();
+    showAssetBoard();
+    return;
+  }
+  if (!res.ok) {
+    node.textContent = data.error || "资产没有出成。";
+    showBanner(data.error || "资产没有出成。");
+    return;
+  }
+  if (data.need_style) {
+    node.textContent = "出图没有开始。";
+    showBanner("出图没有开始。");
+    return;
+  }
+  node.textContent = data.drew ? "资产图出完了。" : "没有新的要出。只画最新一条点了名、还没画好的。";
+  showBanner("");
+  state.assets = data.assets || [];
+  state.step = "assets";
+  paintChrome();
+  showAssetBoard();
+}
+
+let writingPrompts = false;
+let drawingAssets = false;
+
+async function writePrompts(episode) {
+  if (writingPrompts) {
+    showBanner("上一份还在写。");
+    return;
+  }
+  writingPrompts = true;
+  const stop = openThinking("正在写提示词");
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 1260000);
+  let res;
+  let data = {};
+  try {
+    res = await fetch("/api/prompts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        director_id: state.directorId,
+        episode: episode,
+        ratio: state.ratio || "16:9",
+        messages: state.messages
+      }),
+      signal: controller.signal
+    });
+    data = await res.json();
+  } catch (error) {
+    showBanner(error && error.name === "AbortError" ? "写太久了，已停下。可以再点一次。" : "提示词没有写成。");
+    return;
+  } finally {
+    clearTimeout(timer);
+    stop();
+    writingPrompts = false;
+  }
+  if (!res.ok) {
+    showBanner(data.error || "提示词没有写成。");
+    return;
+  }
+  showBanner("");
+  if (Array.isArray(data.assets)) state.assets = data.assets;
+  if (data.stills) {
+    addBubble("director", data.talk || "提示词写好了。", false);
+    state.step = "assets";
+    paintChrome();
+    showAssetBoard();
+    return;
+  }
+  state.scenes = data.scenes || state.scenes;
+  state.step = "submit";
+  paintChrome();
+  addBubble("director", (data.talk || "提示词写好了。") + "\n\n上面是概述。提示词正文在下面。秒数未定的场先不要提交。", false);
+  renderSubmitChoices();
+}
+
+function pickRatio(value) {
+  state.ratio = value;
+  paintChrome();
+  paintChoices();
+}
+
+function pickResolution(value) {
+  state.resolution = value;
+  paintChrome();
+  paintChoices();
+}
+
+async function submitEpisode() {
+  if (!state.ratio || !state.resolution) {
+    showBanner("先点画幅和分辨率，再提交。");
+    addActions([{ label: "提交并成片", run: submitEpisode }]);
+    return;
+  }
+  showBanner("正在按对话提交。");
+  const res = await fetch("/api/episode", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ratio: state.ratio,
+      resolution: state.resolution,
+      video_model: state.videoModel || "seedance",
+      seconds_choice: state.seconds || "auto"
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    showBanner(data.error || "没有交上去。");
+    return;
+  }
+  const lines = (data.jobs || []).map((job) => job.seconds + "秒  " + job.place).join("\n");
+  addBubble("director", "已按场提交。\n" + lines, false);
+  pollEpisode();
+}
+
+let genClock = 0;
+let genSnapshot = null;
+let currentTask = { state: "idle", kind: "", label: "" };
+
+function paintTask(task) {
+  currentTask = task || { state: "idle", kind: "", label: "" };
+  const stateName = currentTask.state || "idle";
+  const names = { draw: "生图", write: "写提示词", think: "导演回复", video: "提交视频", style: "风格图", analyze: "解析参考视频" };
+  const name = names[currentTask.kind] || "任务";
+  const detail = currentTask.label || "";
+  let text = "当前没有任务";
+  if (stateName === "running") text = name + "进行中" + (detail ? " · " + detail : "");
+  else if (stateName === "paused") text = name + "已暂停" + (detail ? " · " + detail : "");
+  else if (stateName === "stopping") text = "正在终止";
+  const line = document.getElementById("taskLine");
+  if (line) line.textContent = text;
+  const pause = document.getElementById("dockPause");
+  const resume = document.getElementById("dockResume");
+  const halt = document.getElementById("dockHalt");
+  if (pause) pause.disabled = stateName !== "running";
+  if (resume) resume.disabled = stateName !== "paused";
+  if (halt) halt.disabled = !(stateName === "running" || stateName === "paused");
+}
+
+async function taskAction(action) {
+  let res;
+  let data = {};
+  try {
+    res = await fetch("/api/task", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: action })
+    });
+    data = await res.json();
+  } catch (error) {
+    showBanner("没有连上。");
+    return;
+  }
+  if (!res.ok) {
+    showBanner(data.error || "没有动。");
+    return;
+  }
+  showBanner("");
+  paintTask(data);
+}
+
+function paintGenerating(data) {
+  let node = document.getElementById("generating");
+  if (!node) {
+    node = document.createElement("div");
+    node.id = "generating";
+    node.className = "bubble director thinking";
+    const thread = document.getElementById("thread");
+    thread.appendChild(node);
+  }
+  const jobs = data.jobs || [];
+  const done = jobs.filter((job) => job.status === "done").length;
+  const current = jobs.find((job) => job.status !== "done" && job.status !== "error") || {};
+  const started = Number(data.started) || 0;
+  const waited = started ? Math.max(0, Math.round(Date.now() / 1000 - started)) : null;
+  const clock = waited == null ? "" : String(Math.floor(waited / 60)).padStart(2, "0") + ":" + String(waited % 60).padStart(2, "0");
+  const which = jobs.length ? Math.min(done + 1, jobs.length) : 0;
+  const paused = currentTask.state === "paused";
+  node.textContent = (paused ? "提交已暂停" : "正在生成视频") + (clock ? " · 已等 " + clock : "")
+    + (jobs.length ? "\n第 " + which + " / " + jobs.length + " 场" : "")
+    + (current.place ? " · " + current.place : "")
+    + (current.seconds ? " · 这一场 " + current.seconds + " 秒" : "");
+  document.getElementById("thread").scrollTop = document.getElementById("thread").scrollHeight;
+}
+
+function showFilm(data) {
+  const thread = document.getElementById("thread");
+  let stage = document.getElementById("filmStage");
+  if (!data || data.phase !== "done" || !data.film) {
+    if (stage) stage.remove();
+    return;
+  }
+  if (!stage) {
+    stage = document.createElement("div");
+    stage.id = "filmStage";
+    stage.className = "film-stage";
+    const video = document.createElement("video");
+    video.controls = true;
+    video.playsInline = true;
+    video.src = "/film?project=" + encodeURIComponent(state.projectId || "");
+    const save = document.createElement("a");
+    save.className = "save-film";
+    save.href = "/film?save=1&project=" + encodeURIComponent(state.projectId || "");
+    save.setAttribute("download", "");
+    save.textContent = "保存成片";
+    stage.append(video, save);
+  }
+  const actions = thread.querySelector(":scope > .actions");
+  if (actions) thread.insertBefore(stage, actions);
+  else thread.appendChild(stage);
+}
+
+function finishGenerating(text) {
+  clearInterval(genClock);
+  genClock = 0;
+  genSnapshot = null;
+  const node = document.getElementById("generating");
+  if (node) {
+    node.classList.remove("thinking");
+    node.id = "";
+    node.textContent = text;
+    return;
+  }
+  addBubble("director", text, false);
+}
+
+async function pollEpisode() {
+  const res = await fetch("/api/episode");
+  const data = await res.json();
+  genSnapshot = data;
+  if (data.phase === "done") {
+    showBanner("");
+    finishGenerating("成片好了。可以在下面看，也可以保存到自己的电脑。");
+    showFilm(data);
+    return;
+  }
+  if (data.phase === "error") {
+    showBanner(data.error || "成片没有接上。");
+    finishGenerating(data.error || "成片没有接上。");
+    return;
+  }
+  if (data.phase !== "running") return;
+  paintGenerating(data);
+  if (!genClock) {
+    genClock = setInterval(() => {
+      if (genSnapshot && genSnapshot.phase === "running") paintGenerating(genSnapshot);
+    }, 1000);
+  }
+  setTimeout(pollEpisode, 8000);
+}
+
+function openThinking(label) {
+  const node = document.createElement("div");
+  node.className = "bubble director thinking";
+  node.textContent = label;
+  const thread = document.getElementById("thread");
+  thread.appendChild(node);
+  thread.scrollTop = thread.scrollHeight;
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (!node.isConnected) {
+      clearInterval(timer);
+      return;
+    }
+    const seconds = Math.max(1, Math.round((Date.now() - started) / 1000));
+    node.textContent = label + " · " + seconds + "秒";
+  }, 700);
+  return () => {
+    clearInterval(timer);
+    node.remove();
+  };
+}
+
+async function followThinking() {
+  let node = document.getElementById("thinking");
+  if (!node) {
+    node = document.createElement("div");
+    node.id = "thinking";
+    node.className = "bubble director thinking";
+    node.textContent = "正在想";
+    const thread = document.getElementById("thread");
+    thread.appendChild(node);
+    keepAssetBoard();
+  }
+  const started = Date.now();
+  while (node.isConnected) {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    let session = {};
+    try {
+      session = await (await fetch("/api/session")).json();
+    } catch (error) {
+      if (Date.now() - started > 15000) {
+        state.waiting = false;
+        node.id = "";
+        node.textContent = "连接中断，回复任务可能仍在运行。刷新后可恢复。";
+        showBanner("连接中断，可刷新恢复项目。");
+        return;
+      }
+      continue;
+    }
+    const seconds = Math.max(1, Math.round((Date.now() - started) / 1000));
+    if (session.task) paintTask(session.task);
+    if (session.task && session.task.state === "paused") {
+      node.textContent = "已暂停";
+      continue;
+    }
+    if (session.thinking) {
+      const live = session.thinking_text || "";
+      node.textContent = live && live !== "正在想" ? live : ("正在想 · " + seconds + "秒");
+      document.getElementById("thread").scrollTop = document.getElementById("thread").scrollHeight;
+      if (seconds > 600 && session.thinking) {
+        node.textContent = "想得太久了。等它停下再发。";
+        continue;
+      }
+      continue;
+    }
+    const msgs = Array.isArray(session.messages) ? session.messages : state.messages;
+    state.messages = msgs;
+    if (typeof syncIntelligence === "function") syncIntelligence(session);
+    const last = msgs[msgs.length - 1];
+    node.classList.remove("thinking");
+    node.id = "";
+    node.textContent = last && last.role === "assistant" ? (last.content || "") : "这句没有回上来。可以再发一次。";
+    state.waiting = false;
+    if (Array.isArray(session.assets)) state.assets = session.assets;
+    if (state.step === "assets" && !state.browsing) showAssetBoard();
+    else keepAssetBoard();
+    remember();
+    return;
+  }
+}
+
+async function onUserText(text) {
+  if (state.waiting) {
+    showBanner("上一句还在想。");
+    return;
+  }
+  addBubble("user", text);
+  state.waiting = true;
+  const res = await fetch("/api/run", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ director_id: state.directorId, messages: state.messages })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    state.waiting = false;
+    showBanner(data.error || "导演没有回。");
+    return;
+  }
+  showBanner("");
+  await followThinking();
+}
+
+document.getElementById("composer").onsubmit = (event) => {
+  event.preventDefault();
+  const say = document.getElementById("say").value.trim();
+  if (!say) return;
+  if (!state.directorId) {
+    showBanner("先选一位导演。");
+    return;
+  }
+  document.getElementById("say").value = "";
+  onUserText(say);
+};
+
+document.getElementById("scriptFile").onchange = async (event) => {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  if (!state.directorId) {
+    showBanner("先选一位导演，再传剧本。");
+    event.target.value = "";
+    return;
+  }
+  addBubble("user", "上传剧本 " + file.name);
+  const res = await fetch("/api/script", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: file.name, data_base64: await fileToBase64(file) })
+  });
+  const data = await res.json();
+  event.target.value = "";
+  if (!res.ok) {
+    showBanner(data.error || "剧本没传上");
+    return;
+  }
+  await afterScript(data.name);
+};
+
+document.getElementById("refFile").onchange = async (event) => {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  if (!state.directorId) {
+    showBanner("先选一位导演，再传参考图。");
+    event.target.value = "";
+    return;
+  }
+  addBubble("user", "上传参考图 " + file.name);
+  const res = await fetch("/api/refs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: file.name, data_base64: await fileToBase64(file) })
+  });
+  const data = await res.json();
+  event.target.value = "";
+  if (!res.ok) {
+    showBanner(data.error || "参考图没传上");
+    return;
+  }
+  state.refs = data.refs || [];
+  showGallery([{ kind: "参考", name: data.name, file: data.file }], "/refs/");
+  addBubble("director", "参考图收下了，名字是「" + data.name + "」。出资产图时，名字对得上的资产会按这张图锁外形。名字对不上的不用它。视频不直接贴这张原图。");
+};
+
+const sayBox = document.getElementById("say");
+sayBox.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" || event.shiftKey || event.isComposing || event.keyCode === 229) return;
+  event.preventDefault();
+  document.getElementById("composer").requestSubmit();
+});
+document.getElementById("composerResize").onpointerdown = (event) => {
+  event.preventDefault();
+  const startY = event.clientY;
+  const startH = sayBox.offsetHeight;
+  function move(e) {
+    sayBox.style.height = Math.max(48, startH + startY - e.clientY) + "px";
+  }
+  function up() {
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", up);
+  }
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", up);
+};
+
+function clearAssetUi() {
+  document.querySelectorAll("#thread .asset-ui").forEach((node) => node.remove());
+}
+
+function openAssets() {
+  if (state.browsing) return;
+  if (!state.directorId) {
+    showBanner("先选一位导演，再传资产。");
+    return;
+  }
+  state.step = "assets";
+  document.getElementById("thread").classList.remove("poster");
+  document.querySelectorAll("#thread .cards:not(.pockets)").forEach((node) => node.remove());
+  paintChrome();
+  showAssetBoard();
+}
+
+function showAssetBoard() {
+  state.pocket = "";
+  clearAssetUi();
+  paintChrome();
+  const wrap = document.createElement("div");
+  wrap.className = "asset-ui";
+  const row = document.createElement("div");
+  row.className = "cards folders pockets";
+  [
+    "人物",
+    "场景",
+    "道具",
+    "音频"
+  ].forEach((kind) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    const ready = state.assets.filter((asset) => asset.kind === kind && asset.file);
+    if (ready.length) {
+      const sheet = document.createElement("div");
+      sheet.className = "sheet";
+      ready.forEach((asset) => {
+        const thumb = document.createElement("span");
+        thumb.className = "thumb";
+        const img = document.createElement("img");
+        const src = mediaUrl("/library/", asset.file);
+        img.src = src;
+        img.alt = asset.name || "";
+        img.onclick = (event) => {
+          event.stopPropagation();
+          openViewer(src);
+        };
+        const drop = document.createElement("button");
+        drop.type = "button";
+        drop.className = "drop";
+        drop.textContent = "删除";
+        drop.onclick = (event) => {
+          event.stopPropagation();
+          deleteAsset(asset.file, kind, "board");
+        };
+        thumb.append(img, drop);
+        sheet.appendChild(thumb);
+      });
+      card.appendChild(sheet);
+    }
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = kind;
+    card.append(name);
+    const add = document.createElement("label");
+    add.className = "filebtn add-asset";
+    add.textContent = "增加";
+    add.onclick = (event) => event.stopPropagation();
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = kind === "音频" ? ".mp3,.wav,.m4a" : ".png,.jpg,.jpeg,.webp";
+    input.onchange = (event) => {
+      event.stopPropagation();
+      sendAsset(kind, event);
+    };
+    add.appendChild(input);
+    card.appendChild(add);
+    card.onclick = () => showAssetPocket(kind);
+    row.appendChild(card);
+  });
+  wrap.append(row);
+  const thread = document.getElementById("thread");
+  thread.appendChild(wrap);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function showAssetPocket(kind) {
+  state.pocket = kind;
+  rememberView();
+  clearAssetUi();
+  const wrap = document.createElement("div");
+  wrap.className = "asset-ui";
+  const back = document.createElement("button");
+  back.type = "button";
+  back.className = "back";
+  back.textContent = "返回";
+  back.onclick = () => showAssetBoard();
+  wrap.appendChild(back);
+  const items = state.assets.filter((asset) => asset.kind === kind);
+  const ready = items.filter((asset) => asset.file);
+  if (kind === "音频") {
+    ready.forEach((asset) => {
+      const row = document.createElement("div");
+      row.className = "audio-row";
+      const audio = document.createElement("audio");
+      audio.controls = true;
+      audio.src = mediaUrl("/library/", asset.file);
+      const drop = document.createElement("button");
+      drop.type = "button";
+      drop.className = "drop";
+      drop.textContent = "删除";
+      drop.onclick = () => deleteAsset(asset.file, kind, "pocket");
+      row.append(audio, drop);
+      wrap.appendChild(row);
+    });
+  } else if (ready.length) {
+    const figures = document.createElement("div");
+    figures.className = "figures";
+    ready.forEach((asset) => {
+      const fig = document.createElement("figure");
+      const img = document.createElement("img");
+      const src = mediaUrl("/library/", asset.file);
+      img.src = src;
+      img.alt = asset.name || "";
+      img.onclick = () => openViewer(src);
+      const cap = document.createElement("figcaption");
+      cap.textContent = asset.name || "";
+      const drop = document.createElement("button");
+      drop.type = "button";
+      drop.className = "drop";
+      drop.textContent = "删除";
+      drop.onclick = (event) => {
+        event.stopPropagation();
+        deleteAsset(asset.file, kind, "pocket");
+      };
+      fig.append(img, cap, drop);
+      figures.appendChild(fig);
+    });
+    wrap.appendChild(figures);
+  }
+  const missing = items.filter((asset) => !asset.file).map((asset) => asset.name).filter(Boolean);
+  if (missing.length) {
+    const note = document.createElement("p");
+    note.className = "miss";
+    note.textContent = "还缺：" + missing.join("、");
+    wrap.appendChild(note);
+  }
+  const label = document.createElement("label");
+  label.className = "filebtn";
+  label.textContent = "上传" + kind;
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = kind === "音频" ? ".mp3,.wav,.m4a" : ".png,.jpg,.jpeg,.webp";
+  input.onchange = (event) => sendAsset(kind, event);
+  label.appendChild(input);
+  wrap.appendChild(label);
+  document.getElementById("thread").appendChild(wrap);
+}
+
+async function deleteAsset(file, kind, stay) {
+  const label = kind === "音频" ? "删掉这段？" : "删掉这张？";
+  if (!window.confirm(label)) return;
+  const res = await fetch("/api/assets/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: file })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    showBanner(data.error || "没有删掉。");
+    return;
+  }
+  showBanner("");
+  state.assets = data.assets || [];
+  const viewer = document.getElementById("viewer");
+  if (viewer) viewer.remove();
+  if (stay === "pocket") showAssetPocket(kind);
+  else showAssetBoard();
+}
+
+async function sendAsset(kind, event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  showBanner("正在放进「" + kind + "」。");
+  const res = await fetch("/api/assets/place", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: kind, name: file.name, data_base64: await fileToBase64(file) })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    showBanner(data.error || "没传上");
+    return;
+  }
+  showBanner("");
+  state.assets = data.assets || [];
+  remember();
+  showAssetPocket(kind);
+}
+
+function clearThread() {
+  document.querySelectorAll("#thread .bubble, #thread .actions, #thread .cards, #thread .figures, #thread .asset-ui, #thread .film-stage, #thread .prompt-sheet").forEach((node) => node.remove());
+}
+
+function showProjectFolders(data) {
+  state.browsing = true;
+  state.projectList = data.projects || [];
+  state.projectId = data.current || state.projectId || "";
+  clearThread();
+  document.getElementById("thread").classList.add("poster");
+  const row = document.createElement("div");
+  row.className = "cards folders";
+  state.projectList.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "card" + (item.id === state.projectId ? " current" : "");
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = item.name || item.id;
+    if (item.cover) {
+      card.classList.add("has-cover");
+      card.style.setProperty("--cover", "url(\"" + item.cover + "\")");
+    }
+    const tools = document.createElement("div");
+    tools.className = "fold-tools";
+    tools.onclick = (event) => event.stopPropagation();
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "fold-del";
+    del.textContent = "删除";
+    del.onclick = () => removeProject(item);
+    tools.append(del);
+    card.append(name, tools);
+    card.onclick = () => openProject(item.id);
+    row.appendChild(card);
+  });
+  const create = document.createElement("button");
+  create.type = "button";
+  create.className = "card";
+  const name = document.createElement("span");
+  name.className = "name";
+  name.textContent = "新项目";
+  create.append(name);
+  create.onclick = () => makeProject();
+  row.appendChild(create);
+  document.getElementById("thread").appendChild(row);
+  paintChrome();
+}
+
+async function removeProject(item) {
+  const title = item.name || item.id;
+  if (!window.confirm("删除「" + title + "」？这个文件夹里的对话和图都会去掉。")) return;
+  const res = await fetch("/api/projects/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: item.id })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    showBanner(data.error || "没有删掉。");
+    return;
+  }
+  if (state.projectId === item.id) state.projectId = "";
+  showProjectFolders(data);
+}
+
+async function makeProject() {
+  const name = window.prompt("新项目叫什么");
+  if (!name) return;
+  const res = await fetch("/api/projects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: name })
+  });
+  const created = await res.json();
+  if (!res.ok) {
+    showBanner(created.error || "项目没有建成。");
+    return;
+  }
+  state.projectId = (created.project && created.project.id) || created.current || "";
+  clearThread();
+  showFresh();
+}
+
+function showFresh() {
+  state.browsing = false;
+  state.directorId = "";
+  state.directorName = "";
+  state.step = "director";
+  state.messages = [];
+  state.scenes = [];
+  state.assets = [];
+  state.refs = [];
+  state.ratio = "16:9";
+  state.resolution = "720p";
+  state.imageModel = "banana";
+  state.videoModel = "seedance";
+  state.seconds = "auto";
+  document.getElementById("thread").classList.add("poster");
+  paintChrome();
+  addDirectorCards(state.directors);
+}
+
+async function openProject(id) {
+  const res = await fetch("/api/projects/open", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: id })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    showBanner(data.error || "没有打开项目。");
+    return;
+  }
+  state.projectId = data.current || id;
+  state.projectList = data.projects || state.projectList;
+  clearThread();
+  if ((data.messages || []).length || data.director_id) restore(data);
+  else showFresh();
+}
+
+async function goFolders() {
+  const latest = await (await fetch("/api/projects")).json();
+  showProjectFolders(latest);
+}
+
+async function boot() {
+  const health = await (await fetch("/api/health")).json();
+  const line = document.getElementById("modelLine");
+  if (line) line.dataset.writing = health.model || "";
+  paintModelLine();
+  if (!health.ok) showBanner("写作模型还没连上。");
+  const data = await (await fetch("/api/directors")).json();
+  state.directors = data.directors || [];
+  const secondsMenu = document.getElementById("secondsMenu");
+  if (secondsMenu && !secondsMenu.childElementCount) {
+    const auto = document.createElement("button");
+    auto.type = "button";
+    auto.dataset.kind = "seconds";
+    auto.dataset.value = "auto";
+    auto.textContent = "跟随分场";
+    secondsMenu.appendChild(auto);
+    for (let second = 4; second <= 30; second += 1) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.kind = "seconds";
+      button.dataset.value = String(second);
+      button.textContent = second + "秒";
+      secondsMenu.appendChild(button);
+    }
+  }
+  const projects = await (await fetch("/api/projects")).json();
+  const view = savedView();
+  const ids = new Set((projects.projects || []).map((item) => item.id));
+  const wanted = ids.has(view.projectId) ? view.projectId : "";
+  if (view.browsing || !wanted) showProjectFolders(projects);
+  else {
+    await openProject(wanted);
+    if (state.browsing) showProjectFolders(projects);
+    else if (view.pocket && state.step === "assets") showAssetPocket(view.pocket);
+  }
+  document.getElementById("backProjects").onclick = goFolders;
+  document.getElementById("home").onclick = goFolders;
+  document.getElementById("allProjects").onclick = goFolders;
+  document.getElementById("changeDirector").onclick = openDirectorPick;
+  document.querySelector('#steps li[data-step="director"]').onclick = openDirectorPick;
+  document.querySelector('#steps li[data-step="assets"]').onclick = openAssets;
+  document.querySelectorAll(".pick").forEach((pick) => {
+    pick.onclick = (event) => event.stopPropagation();
+    pick.querySelector(".pick-current").onclick = () => {
+      const opening = !pick.classList.contains("open");
+      document.querySelectorAll(".pick.open").forEach((node) => node.classList.remove("open"));
+      if (opening) pick.classList.add("open");
+    };
+    pick.querySelectorAll(".pick-menu button").forEach((button) => {
+      button.onclick = () => {
+        if (button.dataset.kind === "ratio") state.ratio = button.dataset.value;
+        else if (button.dataset.kind === "image-model") state.imageModel = button.dataset.value;
+        else if (button.dataset.kind === "video-model") state.videoModel = button.dataset.value;
+        else if (button.dataset.kind === "seconds") state.seconds = button.dataset.value;
+        else state.resolution = button.dataset.value;
+        pick.classList.remove("open");
+        paintChrome();
+      };
+    });
+  });
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".pick.open").forEach((node) => node.classList.remove("open"));
+  });
+  document.getElementById("dockBanana").onclick = () => makeAssets();
+  document.getElementById("dockSubmit").onclick = () => submitEpisode();
+  document.getElementById("dockPause").onclick = () => taskAction("pause");
+  document.getElementById("dockResume").onclick = () => taskAction("resume");
+  document.getElementById("dockHalt").onclick = () => taskAction("stop");
+  setInterval(async () => {
+    try {
+      paintTask(await (await fetch("/api/task")).json());
+    } catch (error) {
+      return;
+    }
+  }, 3000);
+}
+
+</script>
+<script src="/intelligence.js"></script>
+<script src="/journey.js"></script>
+<script>
+  // The guided journey overrides must exist before the first async boot renders a view.
+  boot();
+</script>
+</body>
+</html>
