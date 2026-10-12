@@ -1,0 +1,15 @@
+---
+description: 项目隔离、并行任务、离线检查与私有数据约束
+alwaysApply: true
+---
+
+遵守 AGENTS.md 与 docs/COLLABORATION.md。
+
+- 请求和后台任务绑定正确 Work 与项目 ID；不同浏览器 / 项目隔离，同项目冲突操作阻止。
+- 占用和锁仅在单服务进程有效；不能部署两个服务同时写同一 cache_root。
+- unknown 任务先核对，复用已受理任务；不自动重交扣费。
+- 不删除用户项目，不清缓存，不停止原有 ComfyUI。部署保留配置与缓存路径。
+- 仅临时目录、临时本地 HTTP 服务和模拟收费接口用于测试。
+- 执行 python tools/run_checks.py 与 node tools/check_web.mjs；准确报告未运行项。
+- 密钥、本机 config / secrets / session、上传文件、结果、缓存和日志禁止提交。
+- 修改源码用独立分支，PR 合并；同步受影响工作流文档。
