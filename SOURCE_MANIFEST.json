@@ -9,7 +9,8 @@
     "json_examples": "passed",
     "private_files": "excluded",
     "credential_pattern_scan": "no_hits",
-    "python_tests": "not_run_shell_environment_restriction"
+    "python_tests": "local_not_run; remote_results_in_GitHub_Actions",
+    "github_actions": "configured_for_Windows_Python_3.11_and_3.12"
   },
   "files": [
     {
@@ -84,8 +85,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 2873,
-      "sha256": "d4b4ebfc8fbaf1811141f589cdb5c86bdd8c1596b7dfe9a6dc69149eb11ba144"
+      "bytes": 3416,
+      "sha256": "9b279eb303da9d740e2327219b2776563d047fb0962c7c38eac3d0babc3e8e26"
     },
     {
       "path": "docs/WORKFLOW.md",
@@ -209,8 +210,8 @@
     },
     {
       "path": "tests/test_upgrade.py",
-      "bytes": 17408,
-      "sha256": "332375b05d8ffbfb66ffa40de8795877b36dd317464973213bd7f3758a5225f6"
+      "bytes": 18325,
+      "sha256": "800cedaf1c5dac9275b3fec7a91958562fceb7d8a5c290e2c57a8c850c5e15df"
     },
     {
       "path": "tests/test_workflow.py",
